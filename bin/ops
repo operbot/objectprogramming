@@ -17,8 +17,8 @@ import time
 sys.path.insert(0, os.getcwd())
 
 
-from op import Wd
-from opm.run import Event, Handler, Shell, scan, scandir
+from op import Wd, printable
+from opm.run import Cfg, Event, Handler, Shell, scandir
 from opm.thr import launch
 
 from opm import cmds
@@ -66,6 +66,12 @@ class Shell(Handler):
 shl = Shell()
 
 
+def banner():
+    print("OPD shell started at %s" % time.ctime(time.time()).replace("  ", " "))
+    if Cfg:
+        print(printable(Cfg, skip="password,username,realname"))
+
+
 def importer(packagename, modulename):
     name = "%s.%s" % (packagename, modulename)
     try:
@@ -93,8 +99,9 @@ def wrap(func):
 
 
 def main():
+    banner()
     scandir("mod", importer)
-    scan(shl, cmds)
+    shl.scan(cmds)
     shl.start()
     shl.wait()
 

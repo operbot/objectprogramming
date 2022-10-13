@@ -3,7 +3,7 @@
 # pylint: disable=C0115,C0116,R0201,C0413
 
 
-"operator daemon"
+"object programming internet relay chat"
 
 
 import importlib

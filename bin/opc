@@ -3,7 +3,7 @@
 # pylint: disable=C0115,C0116,C0413
 
 
-"object programming shell"
+"object programming command"
 
 
 import importlib
@@ -16,8 +16,7 @@ sys.path.insert(0, os.getcwd())
 
 
 from op import Wd
-from opm.run import Bus, Event, Handler, scan, scandir
-
+from opm.run import Bus, Event, Handler, scandir
 from opm import cmds
 
 

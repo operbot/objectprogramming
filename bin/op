@@ -2,6 +2,7 @@
 # This file is placed in the Public Domain.
 # pylint: disable=C0116,W0611,C0413
 
+
 "object programming"
 
 
@@ -24,6 +25,7 @@ starttime = time.time()
 
 
 def fnd(args):
+    "fnd <workdir> [type] [selector]"
     if len(args) == 0:
         print("op workdir [type] [selector]")
         return

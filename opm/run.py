@@ -8,28 +8,17 @@
 import inspect
 import os
 import queue
+import sys
 import threading
 import traceback
 import time
 
 
-from op.cls import Class
-from op.dft import Default
-from op.obj import Object, register
-from op.fnc import name
+from op import Class, Default, Object, name, register
 from opm.thr import launch
 
 
 Cfg = Default()
-
-
-def handle(evt):
-    evt.parse()
-    func = getattr(Command.cmd, evt.cmd, None)
-    if func:
-        func(evt)
-        evt.show()
-    evt.ready()
 
 
 class Bus(Object):
@@ -97,39 +86,86 @@ class Command(Object):
         return getattr(Command.cmd, cmd, None)
 
     @staticmethod
+    def handle(evt):
+        if not evt.isparsed:
+            evt.parse()
+        func = Command.get(evt.cmd)
+        if func:
+            func(evt)
+            evt.show()
+        evt.ready()
+
+    @staticmethod
     def remove(cmd):
         del Command.cmd[cmd]
 
 
-class Event(Default):
+class Parsed(Default):
 
     def __init__(self):
         Default.__init__(self)
-        self.__ready__ = threading.Event()
         self.args = []
-        self.result = []
+        self.gets = Default()
+        self.isparsed = False
         self.sets = Default()
-        self.type = "event"
+        self.toskip = Default()
+        self.txt = ""
 
-    def bot(self):
-        return Bus.byorig(self.orig)
+    def default(self, key, default=""):
+        register(self, key, default)
 
     def parse(self, txt=None):
-        if txt:
-            self.txt = txt
-        splitted = self.txt.split()
-        if splitted:
-            self.cmd = splitted[0]
-        if len(splitted) > 1:
-            self.args = splitted[1:]
-            self.rest = " ".join(self.args)
-        for word in splitted[1:]:
+        self.isparsed = True
+        self.otxt = txt or self.txt
+        spl = self.otxt.split()
+        args = []
+        _nr = -1
+        for word in spl:
+            if word.startswith("-"):
+                try:
+                    self.index = int(word[1:])
+                except ValueError:
+                    self.opts = self.opts + word[1:2]
+                continue
+            try:
+                key, value = word.split("==")
+                if value.endswith("-"):
+                    value = value[:-1]
+                    register(self.toskip, value, "")
+                register(self.gets, key, value)
+                continue
+            except ValueError:
+                pass
             try:
                 key, value = word.split("=")
                 register(self.sets, key, value)
                 continue
             except ValueError:
                 pass
+            _nr += 1
+            if _nr == 0:
+                self.cmd = word
+                continue
+            args.append(word)
+        if args:
+            self.args = args
+            self.rest = " ".join(args)
+            self.txt = self.cmd + " " + self.rest
+        else:
+            self.txt = self.cmd
+
+
+class Event(Parsed):
+
+    def __init__(self):
+        Parsed.__init__(self)
+        self.__ready__ = threading.Event()
+        self.control = "!"
+        self.result = []
+        self.type = "event"
+
+    def bot(self):
+        return Bus.byorig(self.orig)
 
     def ready(self):
         self.__ready__.set()
@@ -150,7 +186,9 @@ class Handler(Callbacks):
     def __init__(self):
         Callbacks.__init__(self)
         self.queue = queue.Queue()
-        self.register("event", handle)
+        self.stopped = threading.Event()
+        self.stopped.clear()
+        self.register("event", Command.handle)
         Bus.add(self)
 
     @staticmethod
@@ -164,7 +202,7 @@ class Handler(Callbacks):
         self.dispatch(event)
 
     def loop(self):
-        while 1:
+        while not self.stopped.set():
             self.handle(self.poll())
 
     def poll(self):
@@ -176,20 +214,34 @@ class Handler(Callbacks):
     def raw(self, txt):
         pass
 
+    def restart(self):
+        self.stop()
+        self.start()
+
     def say(self, channel, txt):
         self.raw(txt)
 
     def scan(self, mod):
-        scan(self, mod)
+        for _k, clz in inspect.getmembers(mod, inspect.isclass):
+            Class.add(clz)
+        for key, cmd in inspect.getmembers(mod, inspect.isfunction):
+            if key.startswith("cb"):
+                continue
+            names = cmd.__code__.co_varnames
+            if "event" in names:
+                self.add(cmd)
+
+    def stop(self):
+        self.stopped.set()
 
     def start(self):
+        self.stopped.clear()
         launch(self.loop)
 
-    @staticmethod
-    def wait():
+    def wait(self):
         while 1:
             time.sleep(1.0)
-
+        
 
 class Shell(Handler):
 
@@ -215,15 +267,12 @@ def from_exception(exc, txt="", sep=" "):
     return "%s %s: %s" % (" ".join(result), name(exc), exc, )
 
 
-def scan(obj, mod):
-    for _k, clz in inspect.getmembers(mod, inspect.isclass):
-        Class.add(clz)
-    for key, cmd in inspect.getmembers(mod, inspect.isfunction):
-        if key.startswith("cb"):
-            continue
-        names = cmd.__code__.co_varnames
-        if "event" in names:
-            obj.add(cmd)
+def parse(txt):
+    prs = Parsed()
+    prs.parse(txt)
+    if "v" in prs.opts:
+        prs.verbose = True
+    return prs
 
 
 def scandir(path, func):
