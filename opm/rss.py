@@ -21,8 +21,7 @@ from op import find, fntime, last, printable, save
 from op import edit, elapsed, register, spl, update
 
 
-from opm.run import Bus, Command, Cfg
-from opm.thr import Repeater, launch
+from opm.run import Bus, Command, Cfg, Repeater, launch
 
 
 def __dir__():

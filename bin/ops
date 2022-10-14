@@ -18,8 +18,7 @@ sys.path.insert(0, os.getcwd())
 
 
 from op import Wd, printable
-from opm.run import Cfg, Event, Handler, Shell, scandir
-from opm.thr import launch
+from opm.run import Cfg, Event, Handler, Shell, launch, scandir
 
 from opm import cmds
 
@@ -67,7 +66,7 @@ shl = Shell()
 
 
 def banner():
-    print("OPD shell started at %s" % time.ctime(time.time()).replace("  ", " "))
+    print("Object Programming Shell started (ops) at %s" % time.ctime(time.time()).replace("  ", " "))
     if Cfg:
         print(printable(Cfg, skip="password,username,realname"))
 

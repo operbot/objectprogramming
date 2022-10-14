@@ -3,7 +3,7 @@
 # pylint: disable=C0115,C0116,R0201,C0413
 
 
-"object programming daemon"
+"Object Programming Daemon"
 
 
 import importlib
@@ -25,11 +25,14 @@ from op import Class, Default, Object, Wd
 from op import edit, keys, last, locked, printable, register, save
 
 
-from opm.run import Bus, Command, Event, Handler, Shell, command, scandir
-from opm.irc import IRC
+
+from opm.run import Bus, Command, Event, Handler, Shell, command, launch, scandir
+from opm.irc import Config, IRC
 from opm.rss import Fetcher
-from opm.thr import launch
 from opm import cmds, irc, rss
+
+
+Config.nick = "opd"
 
 
 Wd.workdir = os.path.expanduser("~/.op")
@@ -40,14 +43,15 @@ bot = IRC()
 
 
 def banner():
-    print("OPD daemon started at %s" % time.ctime(time.time()).replace("  ", " "))
+    print("Object Prgramming Daemon started (opd) at %s" % time.ctime(time.time()).replace("  ", " "))
     print(printable(bot.cfg, skip="password,username,realname"))
 
 
 def daemon(silent=False):
-    pid = os.fork()
+    pid = os.fork() 
     if pid != 0:
         os._exit(0)
+   
     os.setsid()
     os.umask(0)
     sis = open("/dev/null", 'r')

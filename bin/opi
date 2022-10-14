@@ -25,10 +25,11 @@ from op import Class, Default, Object, Wd
 from op import edit, keys, last, locked, printable, register, save
 
 
-from opm.run import Bus, Command, Event, Handler, Shell, command, scandir
+from opm.run import Bus, Command, Event, Handler, Shell, command, launch
+from opm.run import scandir
 from opm.irc import IRC
 from opm.rss import Fetcher
-from opm.thr import launch
+
 from opm import cmds, irc, rss
 
 
@@ -75,7 +76,7 @@ shl = Shell()
 
 
 def banner():
-    print("OPD irc started at %s" % time.ctime(time.time()).replace("  ", " "))
+    print("Object Programming IRC started (opi) at %s" % time.ctime(time.time()).replace("  ", " "))
     print(printable(irc.cfg, skip="password,username,realname"))
 
 

@@ -1,8 +1,8 @@
 # This file is placed in the Public Domain.
 # pylint: disable=C0115,C0116,R0201,C0413,R0902,R0903,W0201,W0613
-# pylint: disable=R0912,R0915,R0904,W0221
+# pylint: disable=R0912,R0915,R0904,W0221 
 
-
+ 
 "irc"
 
 
@@ -28,8 +28,7 @@ from op import edit, fntime, find, save, update
 from op import elapsed, register
 
 
-from opm.run import Command, Event, Handler, Shell, handle
-from opm.thr import launch
+from opm.run import Command, Event, Handler, Shell, launch
 
 
 Wd.workdir = os.path.expanduser("~/.op")
@@ -54,17 +53,17 @@ class NoUser(Exception):
 
 class Config(Default):
 
-    channel = "#opd"
+    channel = "#op"
     control = "!"
-    nick = "opd"
+    nick = "op"
     password = ""
     port = 6667
-    realname = "object programming daemon"
+    realname = "object programming"
     sasl = False
     server = "localhost"
     servermodes = ""
     sleep = 60
-    username = "opd"
+    username = "op"
     users = False
 
     def __init__(self):
@@ -208,7 +207,7 @@ class IRC(Handler, Output):
         self.register("NOTICE", self.notice)
         self.register("PRIVMSG", self.privmsg)
         self.register("QUIT", self.quit)
-        self.register("command", handle)
+        self.register("command", Command.handle)
         
     def announce(self, txt):
         for channel in self.channels:
@@ -458,7 +457,7 @@ class IRC(Handler, Output):
             event.type = "command"
             event.orig = repr(self)
             event.parse()
-            self.handle(event)
+            Command.handle(event)
 
     def quit(self, event):
         if event.orig and event.orig in self.zelf:
