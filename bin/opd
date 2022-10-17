@@ -31,10 +31,6 @@ import cmds
 import irc
 
 
-Config.channel = "#opd"
-Config.nick = "opd"
-
-
 Wd.workdir = os.path.expanduser("~/.op")
 
 
