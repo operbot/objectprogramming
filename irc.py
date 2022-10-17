@@ -26,9 +26,7 @@ from op import Class, Default, Object, Wd
 from op import keys, last, locked, printable
 from op import edit, fntime, find, save, update
 from op import elapsed, register
-
-
-from opm.run import Command, Event, Handler, Shell, launch
+from run import Command, Event, Handler, Shell, launch
 
 
 Wd.workdir = os.path.expanduser("~/.op")
@@ -53,7 +51,7 @@ class NoUser(Exception):
 
 class Config(Default):
 
-    channel = "#op"
+    channel = "#objectprogramming"
     control = "!"
     nick = "op"
     password = ""

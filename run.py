@@ -20,6 +20,17 @@ from op import Class, Default, Object, name, register
 Cfg = Default()
 
 
+def scan(mod):
+    for _k, clz in inspect.getmembers(mod, inspect.isclass):
+        Class.add(clz)
+    for key, cmd in inspect.getmembers(mod, inspect.isfunction):
+        if key.startswith("cb"):
+            continue
+        names = cmd.__code__.co_varnames
+        if "event" in names:
+            Command.add(cmd)
+
+
 class Bus(Object):
 
     objs = []
@@ -221,15 +232,8 @@ class Handler(Callbacks):
         self.raw(txt)
 
     def scan(self, mod):
-        for _k, clz in inspect.getmembers(mod, inspect.isclass):
-            Class.add(clz)
-        for key, cmd in inspect.getmembers(mod, inspect.isfunction):
-            if key.startswith("cb"):
-                continue
-            names = cmd.__code__.co_varnames
-            if "event" in names:
-                self.add(cmd)
-
+        scan(mod)
+        
     def stop(self):
         self.stopped.set()
 
