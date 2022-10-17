@@ -18,15 +18,17 @@ sys.path.insert(0, os.getcwd())
 
 
 from op import Wd, printable
-from opm.run import Cfg, Event, Handler, Shell, launch, scandir
+from run import Cfg, Event, Handler, Shell, launch, scandir
 
-from opm import cmds
+
+import cmds
 
 
 Wd.workdir = os.path.expanduser("~/.op")
 
 
 starttime = time.time()
+
 
 class CLI(Handler):
 

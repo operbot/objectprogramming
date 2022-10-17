@@ -23,27 +23,26 @@ sys.path.insert(0, os.getcwd())
 
 from op import Class, Default, Object, Wd
 from op import edit, keys, last, locked, printable, register, save
+from run import Bus, Command, Event, Handler, Shell, command, launch, scandir
+from irc import Config, IRC
 
 
-
-from opm.run import Bus, Command, Event, Handler, Shell, command, launch, scandir
-from opm.irc import Config, IRC
-from opm.rss import Fetcher
-from opm import cmds, irc, rss
+import cmds
+import irc
 
 
+Config.channel = "#opd"
 Config.nick = "opd"
 
 
 Wd.workdir = os.path.expanduser("~/.op")
 
 
-fetcher = Fetcher()
 bot = IRC()
 
 
 def banner():
-    print("Object Prgramming Daemon started (opd) at %s" % time.ctime(time.time()).replace("  ", " "))
+    print("OPD (Object Prgramming Daemon) started at %s" % time.ctime(time.time()).replace("  ", " "))
     print(printable(bot.cfg, skip="password,username,realname"))
 
 
@@ -67,8 +66,8 @@ def main():
     sys.argv[0] = "opd"
     banner()
     daemon()
-    fetcher.start()
     bot.scan(cmds)
+    bot.scan(irc)
     bot.start()
     bot.wait()
 

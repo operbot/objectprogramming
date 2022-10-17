@@ -16,9 +16,10 @@ sys.path.insert(0, os.getcwd())
 
 
 from op import Wd
-from opm.run import Bus, Event, Handler, scandir
-from opm import cmds, irc, rss
+from run import Bus, Event, Handler, scan, scandir
 
+import cmds
+scan(cmds)
 
 Wd.workdir = os.path.expanduser("~/.op")
 
@@ -46,6 +47,7 @@ def importer(packagename, modulename):
 
 def main():
     scandir("mod", importer)
+    scan(cmds)
     evt = Event()
     evt.parse(" ".join(sys.argv[1:]))
     evt.orig = repr(cli)
