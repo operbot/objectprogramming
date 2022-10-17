@@ -23,13 +23,12 @@ sys.path.insert(0, os.getcwd())
 
 from op import Class, Default, Object, Wd
 from op import edit, keys, last, locked, printable, register, save
-from run import Bus, Command, Event, Handler, Shell, command, launch
-from run import scandir
-from irc import IRC
+from opm.run import Bus, Command, Event, Handler, Shell, command, launch
+from opm.run import scandir
+from opm.irc import IRC
 
 
-import cmds
-import irc
+from opm import cmds, irc
 
 
 Wd.workdir = os.path.expanduser("~/.op")

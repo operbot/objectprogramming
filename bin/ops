@@ -18,10 +18,8 @@ sys.path.insert(0, os.getcwd())
 
 
 from op import Wd, printable
-from run import Cfg, Event, Handler, Shell, launch, scandir
-
-
-import cmds
+from opm.run import Cfg, Event, Handler, Shell, launch, scandir
+from opm import cmds
 
 
 Wd.workdir = os.path.expanduser("~/.op")
