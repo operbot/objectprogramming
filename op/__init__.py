@@ -50,7 +50,7 @@ from .dft import Default
 from .fnc import *
 from .jsn import ObjectDecoder, ObjectEncoder, dump, dumps, load, loads, save
 from .obj import *
-from .utl import cdir, elapsed, locked, spl
+from .utl import cdir, elapsed, locked, permission, spl
 from .wdr import Wd, setwd
 
 
@@ -91,6 +91,7 @@ def __dir__():
             'locked',
             'name',
             'obj',
+            'permission',
             'printable',
             'register',
             'save',

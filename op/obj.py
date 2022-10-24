@@ -16,8 +16,8 @@ def __dir__():
             'Object',
             'edit',
             'items',
+            'keys',
             'kind',
-            'type',
             'register',
             'update',
             'values'

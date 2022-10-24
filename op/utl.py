@@ -5,29 +5,42 @@
 "utility"
 
 
+import getpass
 import os
 import pathlib
+import pwd
+import stat
 import time
+
+
+from stat import ST_UID, ST_MODE, S_IMODE
 
 
 def __dir__():
     return (
             "cdir",
+            "debian",
             "elapsed",
             "fns",
             "fntime",
             "fnclass",
             "spl",
+            "user",
             "wait"
            )
+
 
 
 def cdir(path):
     if os.path.exists(path):
         return
-    if os.sep in path:
+    if not path.endswith(os.sep):
         path = os.path.dirname(path)
     pathlib.Path(path).mkdir(parents=True, exist_ok=True)
+    
+
+def debian():
+    return os.path.isfile("/etc/debian_version")
 
 
 def elapsed(seconds, short=True):
@@ -70,6 +83,10 @@ def elapsed(seconds, short=True):
         txt += "%ss" % int(sec)
     txt = txt.strip()
     return txt
+
+
+def filesize(path):
+    return os.stat(path)[6]
 
 
 def fns(path, timed=None):
@@ -116,6 +133,17 @@ def fntime(path):
     return tme
 
 
+def fnclass(path):
+    pth = []
+    try:
+        _rest, *pth = path.split("store")
+    except ValueError:
+        pass
+    if not pth:
+        pth = path.split(os.sep)
+    return pth[0]
+
+
 def locked(lock):
 
     noargs = False
@@ -140,15 +168,21 @@ def locked(lock):
     return lockeddec
 
 
-def fnclass(path):
-    pth = []
-    try:
-        _rest, *pth = path.split("store")
-    except ValueError:
-        pass
-    if not pth:
-        pth = path.split(os.sep)
-    return pth[0]
+def permission(ddir, user="operbot", group="operbot", umode=0o700):
+    pwdline = pwd.getpwnam(user)
+    uid = pwdline.pw_uid
+    gid = pwdline.pw_gid
+    stats = os.stat(ddir)
+    if stats[ST_UID] != uid:
+        os.chown(ddir, uid, gid)
+    if S_IMODE(stats[ST_MODE]) != umode:
+        os.chmod(ddir, umode)
+
+
+def savepid():
+    k = open(os.pah.join(Wd.workdir, 'operbot.pid'),'w')
+    k.write(str(os.getpid()))
+    k.close()
 
 
 def spl(txt):
@@ -157,6 +191,18 @@ def spl(txt):
     except (TypeError, ValueError):
         res = txt
     return [x for x in res if x]
+
+
+def touch(fname):
+    fd = os.open(fname, os.O_WRONLY | os.O_CREAT)
+    os.close(fd)  
+
+
+def user():
+    try:
+        import getpass
+        return getpass.getuser() 
+    except ImportError: return ""
 
 
 def wait():
