@@ -1,15 +1,16 @@
 # This file is placed in the Public Domain.
 
 
-"object programming commands"
+"commands"
 
 
 import threading
 import time
 
 
-from op import Class, Object, elapsed, find, fntime, save, update
-from opm.run import Bus, Command
+from .obj import Class, Object, find, fntime, items, save, update
+from .run import Command
+from .utl import elapsed
 
 
 starttime = time.time()
@@ -37,23 +38,6 @@ def cmd(event):
     event.reply(",".join(sorted(Command.cmd)))
 
 
-Command.add(cmd)
-
-
-def dne(event):
-    if not event.args:
-        return
-    selector = {"txt": event.args[0]}
-    for _fn, obj in find("todo", selector):
-        obj.__deleted__ = True
-        save(obj)
-        event.reply("ok")
-        break
-
-
-Command.add(dne)
-
-
 def log(event):
     if not event.rest:
         _nr = 0
@@ -71,17 +55,14 @@ def log(event):
     event.reply("ok")
 
 
-Command.add(log)
-
-
 def tdo(event):
     if not event.rest:
         nmr = 0
-        for _fn, obj in find("todo"):
+        for fnm, obj in items(find("todo")):
             event.reply("%s %s %s" % (
                                       nmr,
                                       obj.txt,
-                                      elapsed(time.time() - fntime(_fn)))
+                                      elapsed(time.time() - fntime(fnm)))
                                      )
             nmr += 1
         return
@@ -89,9 +70,6 @@ def tdo(event):
     obj.txt = event.rest
     save(obj)
     event.reply("ok")
-
-
-Command.add(tdo)
 
 
 def thr(event):
@@ -115,11 +93,5 @@ def thr(event):
         event.reply("no threads running")
 
 
-Command.add(thr)
-
-
 def upt(event):
     event.reply(elapsed(time.time()-starttime))
-
-
-Command.add(upt)

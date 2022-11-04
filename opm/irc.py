@@ -12,36 +12,21 @@ import queue
 import random
 import socket
 import ssl
-import sys
 import time
 import textwrap
 import threading
 import _thread
 
 
-sys.path.insert(0, os.getcwd())
-
-
-from op import Class, Default, Object, Wd
-from op import keys, last, locked, printable
-from op import edit, fntime, find, save, update
-from op import elapsed, register
-from opm.run import Command, Event, Handler, Shell, launch
-
-
-Wd.workdir = os.path.expanduser("~/.op")
-
-
-starttime = time.time()
+from .obj import Class, Default, Object
+from .obj import items, keys, last, printable
+from .obj import edit, fntime, find, save, update
+from .obj import register
+from .run import Command, Event, Handler, launch
+from .utl import elapsed, locked
 
 
 saylock = _thread.allocate_lock()
-
-
-class CLI(Shell):
-
-    def raw(self, txt):
-        print(txt)
 
 
 class NoUser(Exception):
@@ -139,11 +124,11 @@ class Output(Object):
         self.oqueue.put_nowait((channel, txt))
 
     def output(self):
-        while not self.dostop.isSet():
+        while not self.dostop.is_set():
             (channel, txt) = self.oqueue.get()
             if channel is None and txt is None:
                 break
-            if self.dostop.isSet():
+            if self.dostop.is_set():
                 break
             wrapper = TextWrap()
             txtlist = wrapper.wrap(txt)
@@ -487,8 +472,8 @@ class IRC(Handler, Output):
         self.joined.clear()
         self.doconnect(self.cfg.server, self.cfg.nick, int(self.cfg.port))
 
-    def register(self, cbs, func):
-        register(self.cbs, cbs, func)
+    def register(self, typ, cbs):
+        register(self.cbs, typ, cbs)
 
     def say(self, channel, txt):
         self.oput(channel, txt)
@@ -597,7 +582,7 @@ Class.add(User)
 def cfg(event):
     config = Config()
     last(config)
-    if not event.args:
+    if not event.sets:
         event.reply(printable(
                               config,
                               keys(config),
@@ -609,22 +594,16 @@ def cfg(event):
         event.reply("ok")
 
 
-Command.add(cfg)
-
-
 def dlt(event):
     if not event.args:
         event.reply("dlt <username>")
         return
     selector = {"user": event.args[0]}
-    for _fn, obj in find("user", selector):
+    for _fn, obj in items(find("user", selector)):
         obj.__deleted__ = True
         save(obj)
         event.reply("ok")
         break
-
-
-Command.add(dlt)
 
 
 def met(event):
@@ -646,9 +625,6 @@ def met(event):
     event.reply("ok")
 
 
-Command.add(met)
-
-
 def mre(event):
     if not event.channel:
         event.reply("channel is not set.")
@@ -668,9 +644,6 @@ def mre(event):
     event.reply("%s more in cache" % size)
 
 
-Command.add(mre)
-
-
 def pwd(event):
     if len(event.args) != 2:
         event.reply("pwd <nick> <password>")
@@ -680,6 +653,3 @@ def pwd(event):
     base = base64.b64encode(enc)
     dcd = base.decode("ascii")
     event.reply(dcd)
-
-
-Command.add(pwd)

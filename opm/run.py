@@ -8,13 +8,12 @@
 import inspect
 import os
 import queue
-import sys
 import threading
 import traceback
 import time
 
 
-from op import Class, Default, Object, name, register
+from .obj import Class, Default, Object, Wd, name, register
 
 
 Cfg = Default()
@@ -107,7 +106,7 @@ class Command(Object):
 
     @staticmethod
     def remove(cmd):
-        del Command.cmd[cmd]
+        delattr(Command.cmd, cmd)
 
 
 class Parsed(Default):
@@ -284,7 +283,6 @@ class Thread(threading.Thread):
         func, args = self.queue.get()
         if args:
             self._evt = args[0]
-        self.setName(self.name)
         self.starttime = time.time()
         self._result = func(*args)
 
@@ -306,8 +304,8 @@ class Timer(Object):
 
     def start(self):
         timer = threading.Timer(self.sleep, self.run)
-        timer.setName(self.name)
-        timer.setDaemon(True)
+        timer.name = self.name
+        timer.daemon = True
         timer.sleep = self.sleep
         timer.state = self.state
         timer.state.starttime = time.time()
@@ -358,6 +356,12 @@ def parse(txt):
     if "v" in prs.opts:
         prs.verbose = True
     return prs
+
+
+def savepid():
+    k = open(os.pah.join(Wd.workdir, 'operbot.pid'), "w", encoding='utf-8')
+    k.write(str(os.getpid()))
+    k.close()
 
 
 def scandir(path, func):
