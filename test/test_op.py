@@ -1,5 +1,5 @@
 # This file is placed in the Public Domain.
-# pylint: disable=W0401,W0621,W0614,W1503
+# pylint: disable=R,C,W
 
 
 "op tests"
