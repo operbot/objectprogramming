@@ -13,15 +13,56 @@ import time
 
 
 sys.path.insert(0, os.getcwd())
+sys.path.insert(0, "lib")
 
 
-from op import Wd, allobj, elapsed, keys, fntime, printable
+from op import Wd, keys, fntime, find, printable
 
 
 Wd.workdir = os.path.expanduser("~/.op")
 
 
 starttime = time.time()
+
+
+def elapsed(seconds, short=True):
+    txt = ""
+    nsec = float(seconds)
+    year = 365*24*60*60
+    week = 7*24*60*60
+    nday = 24*60*60
+    hour = 60*60
+    minute = 60
+    years = int(nsec/year)
+    nsec -= years*year
+    weeks = int(nsec/week)
+    nsec -= weeks*week
+    nrdays = int(nsec/nday)
+    nsec -= nrdays*nday
+    hours = int(nsec/hour)
+    nsec -= hours*hour
+    minutes = int(nsec/minute)
+    sec = nsec - minutes*minute
+    if years:
+        txt += "%sy" % years
+    if weeks:
+        nrdays += weeks * 7
+    if nrdays:
+        txt += "%sd" % nrdays
+    if years and short and txt:
+        return txt
+    if hours:
+        txt += "%sh" % hours
+    if nrdays and short and txt:
+        return txt
+    if minutes:
+        txt += "%sm" % minutes
+    if hours and short and txt:
+        return txt
+    if sec != 0:
+        txt += "%ss" % int(sec)
+    txt = txt.strip()
+    return txt
 
 
 def fnd(args):
@@ -42,17 +83,16 @@ def fnd(args):
             print("no types yet.")
         return
     otype = args[1]
-    res = list(allobj(otype))
-    _nr = 0
-    for _fn, obj in res:
+    nmr = 0
+    for obj in find(otype):
         txt = "%s %s %s" % (
-                            str(_nr),
+                            str(nmr),
                             printable(obj, keys(obj)),
-                            elapsed(time.time()-fntime(_fn))
+                            elapsed(time.time()-fntime(obj.__fnm__))
                            )
-        _nr += 1
+        nmr += 1
         print(txt)
-    if not _nr:
+    if not nmr:
         print("no result")
 
 
