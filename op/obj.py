@@ -1,56 +1,32 @@
 # This file is placed in the Public Domain.
-# pylint: disable=R,C,W
-
-"""object programming 
+# pylint: disable=R,C,W,C0302
 
 
-The ``op`` package provides an Object class, that allows for save/load
-to/from json files on disk. Objects can be searched with database
-functions and uses read-only files to improve persistence and a type in
-filename for reconstruction. Methods are factored out into functions to
-have a clean namespace to read JSON data into.
+"object"
 
-basic usage is this::
 
->>> import op
->>> o = op.Object()
->>> o.key = "value"
->>> o.key
->>> 'value'
-
-Objects try to mimic a dictionary while trying to be an object with normal
-attribute access as well. hidden methods are provided, the methods are
-factored out into functions like get, items, keys, register, set, update
-and values.
-
-load/save from/to disk::
-
->>> from op import Object, load, save
->>> o = Object()
->>> o.key = "value"
->>> p = save(o)
->>> obj = Object()
->>> load(obj, p)
->>> obj.key
->>> 'value'
-
-great for giving objects peristence by having their state stored in files::
-
- >>> from op import Object, save
- >>> o = Object()
- >>> save(o)
- 'op.obj.Object/c13c5369-8ada-44a9-80b3-4641986f09df/2021-08-31/15:31:05.717063'
-
-"""
+## import
 
 
 import datetime
+import getpass
+import inspect
 import json
 import os
 import pathlib
+import pwd
+import queue
+import threading
 import time
 import types
 import uuid
+import _thread
+
+
+from stat import ST_UID, ST_MODE, S_IMODE
+
+
+## define
 
 
 def __dir__():
@@ -77,32 +53,67 @@ def __dir__():
             'load',
             'loads',
             'match',
-            'name',
             'printable',
             'register',
             'save',
             'update',
             'values',
+            'write'
            )
 
 
 __all__ = __dir__()
 
 
+
+def locked(lock):
+
+    noargs = False
+
+    def lockeddec(func, *args, **kwargs):
+
+        def lockedfunc(*args, **kwargs):
+            lock.acquire()
+            if args or kwargs:
+                locked.noargs = True
+            res = None
+            try:
+                res = func(*args, **kwargs)
+            finally:
+                lock.release()
+            return res
+
+        lockeddec.__wrapped__ = func
+        lockeddec.__doc__ = func.__doc__
+        return lockedfunc
+
+    return lockeddec
+
+
+disklock = _thread.allocate_lock()
+
+
+## object
+
+
 class Object:
 
+
     __slots__ = ("__dict__", "__fnm__")
+
 
     def __init__(self, *args, **kwargs):
         object.__init__(self)
         self.__fnm__ = os.path.join(
             kind(self),
-            str(uuid.uuid4()),
+            str(uuid.uuid4().hex),
             os.sep.join(str(datetime.datetime.now()).split()),
         )
         if args:
             val = args[0]
-            if isinstance(val, dict):
+            if isinstance(val, zip):
+                update(self, dict(val))
+            elif isinstance(val, dict):
                 update(self, val)
             elif isinstance(val, Object):
                 update(self, vars(val))
@@ -162,21 +173,6 @@ def kind(obj):
     return kin
 
 
-def name(obj):
-    typ = type(obj)
-    if isinstance(typ, types.ModuleType):
-        return obj.__name__
-    if "__self__" in dir(obj):
-        return "%s.%s" % (obj.__self__.__class__.__name__, obj.__name__)
-    if "__class__" in dir(obj) and "__name__" in dir(obj):
-        return "%s.%s" % (obj.__class__.__name__, obj.__name__)
-    if "__class__" in dir(obj):
-        return obj.__class__.__name__
-    if "__name__" in dir(obj):
-        return obj.__name__
-    return None
-
-
 def printable(obj, args="", skip="", plain=False):
     res = []
     keyz = []
@@ -205,7 +201,7 @@ def printable(obj, args="", skip="", plain=False):
             txt = '%s=%s' % (key, value)
         res.append(txt)
     txt = " ".join(res)
-    return txt.rstrip()
+    return txt.strip()
 
 
 def register(obj, key, value):
@@ -221,70 +217,7 @@ def values(obj):
     return obj.__dict__.values()
 
 
-class Db:
-
-    @staticmethod
-    def find(otp, selector=None, index=None, timed=None, deleted=False):
-        if selector is None:
-            selector = {}
-        nmr = -1
-        res = []
-        for fnm in fns(Wd.getpath(otp), timed):
-            obj = hook(fnm)
-            if deleted and "__deleted__" in obj and obj.__deleted__:
-                continue
-            if selector and not search(obj, selector):
-                continue
-            nmr += 1
-            if index is not None and nmr != index:
-                continue
-            res.append(obj)            
-        return res
-
-    @staticmethod
-    def last(otp, selector=None, index=None, timed=None):
-        res =  sorted(Db.find(otp, selector, index, timed), key=lambda x: fntime(x.__fnm__))
-        if res:
-            return res[-1]
-
-def find(otp, selector=None, index=None, timed=None, deleted=False):
-    names = Class.full(otp)
-    if not names:
-        names = Wd.types(otp)
-    result = []
-    for nme in names:
-        res = Db.find(nme, selector, index, timed, deleted)
-        result.extend(res)
-    return sorted(result, key=lambda x: fntime(x.__fnm__))
-
-
-def last(obj):
-    ooo = Db.last(kind(obj))
-    if ooo:
-        update(obj, ooo)
-
-
-def match(otp, selector=None):
-    names = Class.full(otp)
-    if not names:
-        names = Wd.types(otp)
-    for nme in names:
-        for item in Db.last(nme, selector):
-            return item
-    return None
-
-
-def search(obj, selector):
-    res = False
-    select = Object(selector)
-    for key, value in items(select):
-        val = getattr(obj, key)
-        if str(value) in str(val):
-            res = True
-            break
-    return res
-
-
+## json
 
 
 class ObjectDecoder(json.JSONDecoder):
@@ -336,12 +269,14 @@ class ObjectEncoder(json.JSONEncoder):
         return json.JSONEncoder.iterencode(self, o, *args, **kwargs)
 
 
+@locked(disklock)
 def dump(obj, opath):
     cdir(opath)
     with open(opath, "w", encoding="utf-8") as ofile:
         json.dump(
             obj.__dict__, ofile, cls=ObjectEncoder, indent=4, sort_keys=True
         )
+    os.chmod(opath, 0o444)
     return opath
 
 
@@ -349,17 +284,7 @@ def dumps(obj):
     return json.dumps(obj, cls=ObjectEncoder)
 
 
-def hook(path):
-    cname = fnclass(path)
-    cls = Class.get(cname)
-    if cls:
-        obj = cls()
-    else:
-        obj = Object()
-    load(obj, path)
-    return obj
-
-
+@locked(disklock)
 def load(obj, opath):
     splitted = opath.split(os.sep)
     fnm = os.sep.join(splitted[-4:])
@@ -380,8 +305,157 @@ def save(obj):
     obj.__fnm__ = os.path.join(prv, os.sep.join(str(datetime.datetime.now()).split()))
     opath = Wd.getpath(obj.__fnm__)
     dump(obj, opath)
-    os.chmod(opath, 0o444)
     return obj.__fnm__
+
+
+@locked(disklock)
+def write(obj):
+    opath = Wd.getpath(obj.__fnm__)
+    cdir(opath)
+    if os.path.exists(opath):
+        os.chmod(opath, 0o666)
+    with open(opath, "w", encoding="utf-8") as ofile:
+        json.dump(
+            obj.__dict__, ofile, cls=ObjectEncoder, indent=4, sort_keys=True
+        )
+    os.chmod(opath, 0o444)
+    return opath
+
+
+## database
+
+
+class Db:
+
+    @staticmethod
+    def find(otp, selector=None, index=None, timed=None, deleted=False):
+        if selector is None:
+            selector = {}
+        nmr = -1
+        res = []
+        for fnm in fns(otp, timed):
+            obj = hook(fnm)
+            if deleted and "__deleted__" in obj and obj.__deleted__:
+                continue
+            if selector and not search(obj, selector):
+                continue
+            nmr += 1
+            if index is not None and nmr != index:
+                continue
+            res.append(obj)            
+        return res
+
+    @staticmethod
+    def last(otp, selector=None, index=None, timed=None):
+        res =  sorted(Db.find(otp, selector, index, timed), key=lambda x: fntime(x.__fnm__))
+        if res:
+            return res[-1]
+
+
+def fnclass(path):
+    pth = []
+    try:
+        _rest, *pth = path.split("store")
+    except ValueError:
+        pass
+    if not pth:
+        pth = path.split(os.sep)
+    return pth[0]
+
+
+def fns(otp, timed=None):
+    if not otp:
+        return []
+    assert Wd.workdir
+    p = os.path.join(Wd.workdir, "store", otp) + os.sep
+    res = []
+    d = ""
+    for rootdir, dirs, _files in os.walk(p, topdown=False):
+        if dirs:
+            d = sorted(dirs)[-1]
+            if d.count("-") == 2:
+                dd = os.path.join(rootdir, d)
+                fls = sorted(os.listdir(dd))
+                if fls:
+                    p = os.path.join(dd, fls[-1])
+                    if (
+                        timed
+                        and "from" in timed
+                        and timed["from"]
+                        and fntime(p) < timed["from"]
+                    ):
+                        continue
+                    if timed and timed.to and fntime(p) > timed.to:
+                        continue
+                    res.append(p)
+    return sorted(res, key=lambda x: fntime(x))
+
+def fntime(daystr):
+    daystr = daystr.replace("_", ":")
+    datestr = " ".join(daystr.split(os.sep)[-2:])
+    if "." in datestr:
+        datestr, rest = datestr.rsplit(".", 1)
+    else:
+        rest = ""
+    t = time.mktime(time.strptime(datestr, "%Y-%m-%d %H:%M:%S"))
+    if rest:
+        t += float("." + rest)
+    else:
+        t = 0
+    return t
+
+
+def hook(path):
+    cname = fnclass(path)
+    cls = Class.get(cname)
+    if cls:
+        obj = cls()
+    else:
+        obj = Object()
+    load(obj, path)
+    return obj
+
+
+def find(otp, selector=None, index=None, timed=None, deleted=False):
+    names = Class.full(otp)
+    if not names:
+        names = Wd.types(otp)
+    result = []
+    for nme in names:
+        res = Db.find(nme, selector, index, timed, deleted)
+        result.extend(res)
+    return sorted(result, key=lambda x: fntime(x.__fnm__))
+
+
+def last(obj):
+    ooo = Db.last(kind(obj))
+    if ooo:
+        update(obj, ooo)
+        obj.__fnm__ = ooo.__fnm__
+
+
+def match(otp, selector=None):
+    names = Class.full(otp)
+    if not names:
+        names = Wd.types(otp)
+    for nme in names:
+        for item in Db.last(nme, selector):
+            return item
+    return None
+
+
+def search(obj, selector):
+    res = False
+    select = Object(selector)
+    for key, value in items(select):
+        val = getattr(obj, key)
+        if str(value) in str(val):
+            res = True
+            break
+    return res
+
+
+## class whitelist
 
 
 class Class:
@@ -414,9 +488,12 @@ class Class:
         del Class.cls[oname]
 
 
+## working directory
+
+
 class Wd:
 
-    workdir = ""
+    workdir = ".op"
 
     @staticmethod
     def get():
@@ -450,8 +527,7 @@ class Wd:
         return res
 
 
-Class.add(Object)
-Class.add(Default)
+## utility
 
 
 def cdir(path):
@@ -462,55 +538,9 @@ def cdir(path):
     pathlib.Path(path).mkdir(parents=True, exist_ok=True)
     
 
-def fns(otp, timed=None):
-    if not otp:
-        return []
-    assert Wd.workdir
-    p = os.path.join(Wd.workdir, "store", otp) + os.sep
-    res = []
-    d = ""
-    for rootdir, dirs, _files in os.walk(p, topdown=False):
-        if dirs:
-            d = sorted(dirs)[-1]
-            if d.count("-") == 2:
-                dd = os.path.join(rootdir, d)
-                fls = sorted(os.listdir(dd))
-                if fls:
-                    p = os.path.join(dd, fls[-1])
-                    if (
-                        timed
-                        and "from" in timed
-                        and timed["from"]
-                        and fntime(p) < timed["from"]
-                    ):
-                        continue
-                    if timed and timed.to and fntime(p) > timed.to:
-                        continue
-                    res.append(p)
-    return sorted(res, key=fntime)
+## runtime
 
 
-def fntime(daystr):
-    daystr = daystr.replace("_", ":")
-    datestr = " ".join(daystr.split(os.sep)[-2:])
-    if "." in datestr:
-        datestr, rest = datestr.rsplit(".", 1)
-    else:
-        rest = ""
-    t = time.mktime(time.strptime(datestr, "%Y-%m-%d %H:%M:%S"))
-    if rest:
-        t += float("." + rest)
-    else:
-        t = 0
-    return t
-
-
-def fnclass(path):
-    pth = []
-    try:
-        _rest, *pth = path.split("store")
-    except ValueError:
-        pass
-    if not pth:
-        pth = path.split(os.sep)
-    return pth[0]
+Class.add(Object)
+Class.add(Default)
+ 

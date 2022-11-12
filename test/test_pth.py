@@ -2,7 +2,10 @@
 # pylint: disable=C0115,C0116
 
 
-"path tests"
+"path"
+
+
+## import
 
 
 import unittest
@@ -11,7 +14,13 @@ import unittest
 from op import fntime
 
 
-FN = "store/op.run.Event/2022-04-11/22:40:31.259218"
+## define
+
+
+FN = "op.hdl.Event/2d390009cef944e68ce686e5709a54d7/2022-04-11/22:40:31.259218"
+
+
+## class
 
 
 class TestPath(unittest.TestCase):

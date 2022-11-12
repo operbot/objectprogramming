@@ -1,33 +1,48 @@
 # This file is placed in the Public Domain.
-# pylint: disable=C0115,C0116,W0201,W0613,R0902
+# pylint: disable=C0115,C0116,W0703,W0201,R0902,R0903
 
 
-"runtime"
+"handler"
+
+
+## import
 
 
 import inspect
 import os
 import queue
 import threading
-import traceback
 import time
 
 
-from .obj import Class, Default, Object, Wd, name, register
+from .obj import Class, Default, Object, register
+from .thr import launch
+from .utl import elapsed
 
 
-Cfg = Default()
+## define
 
 
-def scan(mod):
-    for _k, clz in inspect.getmembers(mod, inspect.isclass):
-        Class.add(clz)
-    for key, cmd in inspect.getmembers(mod, inspect.isfunction):
-        if key.startswith("cb"):
-            continue
-        names = cmd.__code__.co_varnames
-        if "event" in names:
-            Command.add(cmd)
+def __dir__():
+    return (
+            'Bus',
+            'Callback',
+            'Command',
+            'Parsed',
+            'Event',
+            'Handler',
+            'command',
+            'parse',
+            'scan',
+            'scancls',
+            'scandir'
+           )
+
+
+__all__ = __dir__()
+
+
+## class
 
 
 class Bus(Object):
@@ -60,9 +75,10 @@ class Bus(Object):
             bot.say(channel, txt)
 
 
-class Callbacks(Object):
+class Callback(Object):
 
     cbs = Object()
+    errors = []
 
     def register(self, typ, cbs):
         if typ not in self.cbs:
@@ -73,7 +89,11 @@ class Callbacks(Object):
         if not func:
             event.ready()
             return
-        func(event)
+        try:
+            func(event)
+        except Exception as ex:
+            Callback.errors.append(ex)
+            event.ready()
 
     def dispatch(self, event):
         self.callback(event)
@@ -120,9 +140,6 @@ class Parsed(Default):
         self.toskip = Default()
         self.txt = ""
 
-    def default(self, key, default=""):
-        register(self, key, default)
-
     def parse(self, txt=None):
         self.isparsed = True
         self.otxt = txt or self.txt
@@ -166,15 +183,24 @@ class Parsed(Default):
 
 class Event(Parsed):
 
+
     def __init__(self):
         Parsed.__init__(self)
         self.__ready__ = threading.Event()
         self.control = "!"
+        self.createtime = time.time()
         self.result = []
         self.type = "event"
 
     def bot(self):
         return Bus.byorig(self.orig)
+
+    def error(self):
+        pass
+
+    def done(self):
+        diff = elapsed(time.time()-self.createtime)
+        Bus.say(self.orig, self.channel, f'ok {diff}')
 
     def ready(self):
         self.__ready__.set()
@@ -190,10 +216,10 @@ class Event(Parsed):
         self.__ready__.wait()
 
 
-class Handler(Callbacks):
+class Handler(Callback):
 
     def __init__(self):
-        Callbacks.__init__(self)
+        Callback.__init__(self)
         self.queue = queue.Queue()
         self.stopped = threading.Event()
         self.stopped.clear()
@@ -228,11 +254,8 @@ class Handler(Callbacks):
         self.start()
 
     def say(self, channel, txt):
-        self.raw(txt)
+        pass
 
-    def scan(self, mod):
-        scan(mod)
-        
     def stop(self):
         self.stopped.set()
 
@@ -243,138 +266,55 @@ class Handler(Callbacks):
     def wait(self):
         while 1:
             time.sleep(1.0)
-        
-
-class Shell(Handler):
-
-    def poll(self):
-        event = Event()
-        event.txt = input("> ")
-        event.orig = repr(self)
-        return event
 
 
-class Thread(threading.Thread):
-
-    def __init__(self, func, thrname, *args, daemon=True):
-        super().__init__(None, self.run, name, (), {}, daemon=daemon)
-        self._exc = None
-        self._evt = None
-        self.name = thrname or name(func)
-        self.queue = queue.Queue()
-        self.queue.put_nowait((func, args))
-        self.sleep = None
-        self.starttime = time.time()
-        self.state = None
-        self._result = None
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        for k in dir(self):
-            yield k
-
-    def join(self, timeout=None):
-        super().join(timeout)
-        return self._result
-
-    def run(self) -> None:
-        func, args = self.queue.get()
-        if args:
-            self._evt = args[0]
-        self.starttime = time.time()
-        self._result = func(*args)
+## utility
 
 
-class Timer(Object):
-
-    def __init__(self, sleep, func, *args, thrname=None):
-        super().__init__()
-        self.args = args
-        self.func = func
-        self.sleep = sleep
-        self.name = thrname or name(self.func)
-        self.state = Object()
-        self.timer = None
-
-    def run(self):
-        self.state.latest = time.time()
-        launch(self.func, *self.args)
-
-    def start(self):
-        timer = threading.Timer(self.sleep, self.run)
-        timer.name = self.name
-        timer.daemon = True
-        timer.sleep = self.sleep
-        timer.state = self.state
-        timer.state.starttime = time.time()
-        timer.state.latest = time.time()
-        timer.func = self.func
-        timer.start()
-        self.timer = timer
-        return timer
-
-    def stop(self):
-        if self.timer:
-            self.timer.cancel()
-
-
-class Repeater(Timer):
-
-    def run(self):
-        thr = launch(self.start)
-        super().run()
-        return thr
-
-
-def command(cli, txt):
-    evt = Event()
+def command(cli, txt, event=None):
+    evt = event and event() or Event()
     evt.parse(txt)
     evt.orig = repr(cli)
     cli.handle(evt)
     return evt
 
 
-def from_exception(exc, txt="", sep=" "):
-    result = []
-    for frm in traceback.extract_tb(exc.__traceback__):
-        result.append("%s:%s" % (os.sep.join(frm.filename.split(os.sep)[-2:]), frm.lineno))
-    return "%s %s: %s" % (" ".join(result), name(exc), exc, )
-
-
-def launch(func, *args, **kwargs):
-    thrname = kwargs.get("name", name(func))
-    thr = Thread(func, thrname, *args)
-    thr.start()
-    return thr
-
-
 def parse(txt):
     prs = Parsed()
     prs.parse(txt)
+    if "c" in prs.opts:
+        prs.console = True
     if "v" in prs.opts:
         prs.verbose = True
     return prs
 
 
-def savepid():
-    k = open(os.pah.join(Wd.workdir, 'operbot.pid'), "w", encoding='utf-8')
-    k.write(str(os.getpid()))
-    k.close()
+def scan(mod):
+    scancls(mod)
+    for key, cmd in inspect.getmembers(mod, inspect.isfunction):
+        if key.startswith("cb"):
+            continue
+        names = cmd.__code__.co_varnames
+        if "event" in names:
+            Command.add(cmd)
+
+
+def scancls(mod):
+    for _key, clz in inspect.getmembers(mod, inspect.isclass):
+        Class.add(clz)
 
 
 def scandir(path, func):
     res = []
     if not os.path.exists(path):
         return res
-    for _fn in os.listdir(path):
-        if _fn.endswith("~") or _fn.startswith("__"):
+    for fnm in os.listdir(path):
+        if fnm.endswith("~") or fnm.startswith("__"):
             continue
         try:
-            pname = _fn.split(os.sep)[-2]
+            pname = fnm.split(os.sep)[-2]
         except IndexError:
             pname = path
-        mname = _fn.split(os.sep)[-1][:-3]
+        mname = fnm.split(os.sep)[-1][:-3]
         res.append(func(pname, mname))
     return res

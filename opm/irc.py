@@ -1,9 +1,12 @@
 # This file is placed in the Public Domain.
-# pylint: disable=C0115,C0116,R0201,C0413,R0902,R0903,W0201,W0613
-# pylint: disable=R0912,R0915,R0904,W0221 
+# pylint: disable=C0115,C0116,C0413,R0902,R0903,W0201,W0613
+# pylint: disable=E1101,R0912,R0915,R0904,W0221,C0209
 
- 
+
 "irc"
+
+
+## import
 
 
 import base64
@@ -18,15 +21,46 @@ import threading
 import _thread
 
 
-from .obj import Class, Default, Object
-from .obj import items, keys, last, printable
-from .obj import edit, fntime, find, save, update
-from .obj import register
-from .run import Command, Event, Handler, launch
-from .utl import elapsed, locked
+from op.obj import Class, Default, Object
+from op.obj import keys, last, printable
+from op.obj import edit, fntime, find, save, update
+from op.obj import register
+from op.hdl import Command, Event, Handler
+from op.thr import launch, name
+from op.utl import elapsed, locked
 
 
+## define
+
+
+def __dir__():
+    return (
+            'Config',
+            'IRC',
+            'cfg',
+            'dlt',
+            'init',
+            'met',
+            'mre',
+            'pwd'
+           )
+
+
+__all__ = __dir__()
+
+
+NAME = "gcid"
+REALNAME = "Court. Prosecutor. Reconsider OTP-CR-117/19."
 saylock = _thread.allocate_lock()
+
+
+def init():
+    irc = IRC()
+    irc.start()
+    return irc
+
+
+## class
 
 
 class NoUser(Exception):
@@ -36,17 +70,17 @@ class NoUser(Exception):
 
 class Config(Default):
 
-    channel = "#objectprogramming"
+    channel = "#%s" % NAME
     control = "!"
-    nick = "op"
+    nick = "%s" % NAME
     password = ""
     port = 6667
-    realname = "object programming"
+    realname = "%s" % REALNAME
     sasl = False
     server = "localhost"
     servermodes = ""
     sleep = 60
-    username = "op"
+    username = "%s" % NAME
     users = False
 
     def __init__(self):
@@ -63,9 +97,6 @@ class Config(Default):
         self.sleep = Config.sleep
         self.username = Config.username
         self.users = Config.users
-
-
-Class.add(Config)
 
 
 class IEvent(Event):
@@ -141,9 +172,9 @@ class Output(Object):
                 _nr += 1
                 self.dosay(channel, txt)
 
-    def size(self, name):
+    def size(self, channel):
         if name in self.cache:
-            return len(self.cache[name])
+            return len(self.cache[channel])
         return 0
 
     def start(self):
@@ -191,7 +222,7 @@ class IRC(Handler, Output):
         self.register("PRIVMSG", self.privmsg)
         self.register("QUIT", self.quit)
         self.register("command", Command.handle)
-        
+
     def announce(self, txt):
         for channel in self.channels:
             self.say(channel, txt)
@@ -576,7 +607,7 @@ class User(Object):
             update(self, val)
 
 
-Class.add(User)
+## command
 
 
 def cfg(event):
@@ -591,7 +622,7 @@ def cfg(event):
     else:
         edit(config, event.sets)
         save(config)
-        event.reply("ok")
+        event.done()
 
 
 def dlt(event):
@@ -599,30 +630,30 @@ def dlt(event):
         event.reply("dlt <username>")
         return
     selector = {"user": event.args[0]}
-    for _fn, obj in items(find("user", selector)):
+    for obj in find("user", selector):
         obj.__deleted__ = True
         save(obj)
-        event.reply("ok")
+        event.done()
         break
 
 
 def met(event):
     if not event.rest:
-        _nr = 0
-        for _fn, obj in find("user"):
+        nmr = 0
+        for obj in find("user"):
             event.reply("%s %s %s %s" % (
-                                         _nr,
+                                         nmr,
                                          obj.user,
                                          obj.perms,
-                                         elapsed(time.time() - fntime(_fn)))
+                                         elapsed(time.time() - fntime(obj.__fnm__)))
                                         )
-            _nr += 1
+            nmr += 1
         return
     user = User()
     user.user = event.rest
     user.perms = ["USER"]
     save(user)
-    event.reply("ok")
+    event.done()
 
 
 def mre(event):
@@ -653,3 +684,10 @@ def pwd(event):
     base = base64.b64encode(enc)
     dcd = base.decode("ascii")
     event.reply(dcd)
+
+
+## runtime
+
+
+Class.add(Config)
+Class.add(User)

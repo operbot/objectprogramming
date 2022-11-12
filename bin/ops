@@ -18,7 +18,8 @@ sys.path.insert(0, os.getcwd())
 
 
 from op import Wd, printable
-from opm.run import Cfg, Event, Handler, Shell, launch, scandir
+from op import Event, Handler, launch, scandir
+
 from opm import cmds
 
 
@@ -67,8 +68,7 @@ shl = Shell()
 
 def banner():
     print("OPS (Object Programming Shell) started at %s" % time.ctime(time.time()).replace("  ", " "))
-    if Cfg:
-        print(printable(Cfg, skip="password,username,realname"))
+    print(printable(Cfg, skip="password,username,realname"))
 
 
 def importer(packagename, modulename):

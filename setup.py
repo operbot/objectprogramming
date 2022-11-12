@@ -20,7 +20,7 @@ setup(
     description="functional programming with objects",
     long_description=read(),
     license="Public Domain",
-    py_modules=["op"],
+    packages=["op"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: Public Domain",
