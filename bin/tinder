@@ -1,0 +1,162 @@
+#!/usr/bin/env python3
+# pylint: disable=E1101,C0116,C0413,C0219,W0613
+# This file is placed in the Public Domain.
+
+
+"tinder"
+
+
+import os
+import random
+import shutil
+import sys
+import termios
+import time
+import traceback
+import _thread
+
+
+sys.path.insert(0, os.getcwd())
+
+
+
+from op.obj import Wd, Object
+from op.hdl import Command, Event, Handler
+from op.hdl import launch, parse, scan
+from op.run import Cfg
+from op.thr import name
+from op.utl import elapsed, locked
+
+
+from opm import cmds, fnd, irc, rss
+
+
+paylock = _thread.allocate_lock()
+
+
+Wd.workdir = ".test"
+Cfg.debug = True
+
+
+scan(cmds)
+scan(fnd)
+scan(irc)
+scan(rss)
+
+
+errors = []
+events = []
+results = []
+
+
+param = Object()
+param.add = ["test@shell", "bart", ""]
+param.cfg = ["server=localhost", ""]
+param.dne = ["test4", ""]
+param.rem = ["reddit", ""]
+param.dpl = ["reddit title,summary,link", ""]
+param.log = ["test1", ""]
+param.flt = ["0", ""]
+param.fnd = [
+             "cfg",
+             "log",
+             "rss",
+             "log txt==test",
+             "cfg server==localhost",
+             "rss rss==reddit"
+            ]
+param.rss = ["https://www.reddit.com/r/python/.rss"]
+param.tdo = ["test4", ""]
+
+
+def cprint(txt):
+    print(txt)
+    sys.stdout.flush()
+
+
+class CLI(Handler):
+
+    def raw(self, txt):
+        if Cfg.verbose:
+            cprint(txt)
+
+
+def consume(evt):
+    fixed = []
+    res = []
+    for _ev in evt:
+        _ev.wait()
+        fixed.append(_ev)
+    for fff in fixed:
+        try:
+            evt.remove(fff)
+        except ValueError:
+            continue
+    return res
+
+
+def from_exception(ex, txt="", sep=" "):
+    result = []
+    for frm in traceback.extract_tb(ex.__traceback__):
+        result.append("%s:%s" % (os.sep.join(frm.filename.split(os.sep)[-2:]), frm.lineno))
+    return "%s(%s) %s" % (name(ex), ex, " ".join(result))
+
+
+
+@locked(paylock)
+def payload(clt):
+    cmds = sorted(Command.cmd)
+    random.shuffle(cmds)
+    _nr = 0
+    for cmd in cmds:
+        for ex in getattr(param, cmd, [""]):
+            evt = Event()
+            evt.txt = cmd + " " + ex
+            evt.orig = repr(clt)
+            evt.parse()
+            clt.put(evt)
+            events.append(evt)
+            _nr += 1
+    return _nr
+
+
+def wrap(func):
+    fds = sys.stdin.fileno()
+    old = termios.tcgetattr(fds)
+    try:
+        func()
+    except (EOFError, KeyboardInterrupt):
+        cprint("")
+    finally:
+        termios.tcsetattr(fds, termios.TCSADRAIN, old)
+
+
+def main():
+    if os.path.exists(Cfg.workdir):
+        shutil.rmtree(Cfg.workdir)
+    cfg = parse(" ".join(sys.argv[1:]))
+    if "v" in cfg.opts:
+        Cfg.verbose = True
+    cli = CLI()
+    cli.start()
+    nrs = cfg.index or 20
+    thrs = []
+    starttime = time.time()
+    for _nr in range(nrs):
+        thrs.append(launch(payload, cli))
+    if thrs:
+        res = 0
+        for thr in thrs:
+            res += thr.join()
+    else:
+        res = nrs * len(Command.cmd)
+    consume(events)
+    endtime = time.time()
+    print("%s %s %s (%s remaining)" %  (
+                                        elapsed(endtime - starttime),
+                                        res,
+                                        (endtime - starttime)/res, len(events))
+                                       )
+
+
+wrap(main)
