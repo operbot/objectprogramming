@@ -17,8 +17,9 @@ import time
 sys.path.insert(0, os.getcwd())
 
 
-from op import Wd, printable
-from op import Event, Handler, launch, scandir
+from op import Cfg, Wd, printable
+from op import Event, Handler, launch, scan, scandir
+
 
 from opm import cmds
 
@@ -41,9 +42,6 @@ cli = CLI()
 
 class Shell(Handler):
 
-    def loop(self):
-        while 1:
-            self.handle(self.poll())
 
     def poll(self):
         event = Event()
@@ -57,10 +55,6 @@ class Shell(Handler):
 
     def start(self):
         launch(self.loop)
-
-    def wait(self):
-        while 1:
-            time.sleep(1.0)
 
 
 shl = Shell()
@@ -100,7 +94,7 @@ def wrap(func):
 def main():
     banner()
     scandir("mod", importer)
-    shl.scan(cmds)
+    scan(cmds)
     shl.start()
     shl.wait()
 

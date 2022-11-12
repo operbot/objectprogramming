@@ -254,7 +254,7 @@ class Handler(Callback):
         self.start()
 
     def say(self, channel, txt):
-        pass
+        self.raw(txt)
 
     def stop(self):
         self.stopped.set()
