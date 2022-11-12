@@ -20,12 +20,12 @@ from urllib.parse import quote_plus, urlencode
 from urllib.request import Request, urlopen
 
 
-from op.obj import Class, Db, Default, Object, write
-from op.obj import find, fntime, last, printable, save
-from op.obj import edit, register, update
-from op.hdl import Bus
-from op.thr import Repeater, launch
-from op.utl import elapsed, spl
+from op import Class, Db, Default, Object, write
+from op import find, fntime, last, printable, save
+from op import edit, register, update
+from op import Bus, Cfg
+from op import Repeater, launch
+from op import elapsed, spl
 
 
 ## define
@@ -186,6 +186,8 @@ class Parser(Object):
 
 
 def getfeed(url, item):
+    if Cfg.debug:
+        return [Object(), Object()]
     try:
         result = geturl(url)
     except (ValueError, HTTPError, URLError):
