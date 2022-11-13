@@ -27,6 +27,7 @@ def popen(txt):
         print(line.rstrip())
         sys.stdout.flush()
 
+
 if __name__ == "__main__":
     if not len(sys.argv) >= 3:
         print("loop <dir> <cmd>")
