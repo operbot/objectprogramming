@@ -23,4 +23,5 @@ def popen(txt):
 ## runtime
 
 
-popen("python3 setup.py sdist bdist_wheel")
+popen("python3 setup.py sdist")
+#popen("python3 -m pip install .")

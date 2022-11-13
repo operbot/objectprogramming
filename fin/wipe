@@ -23,5 +23,5 @@ def popen(txt):
 ## runtime
 
 
-popen("pbin/clean")
+popen("fin/clean")
 popen("rm -fR env")

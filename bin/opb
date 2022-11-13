@@ -75,7 +75,7 @@ signal.signal(15, hup)
 
 
 def main():
-    boot(__name__)
+    boot(NAME)
     scan(cmds)
     scan(irc)
     scan(rss)

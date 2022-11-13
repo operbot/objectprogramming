@@ -27,7 +27,7 @@ name = os.getcwd()
 
 
 if not os.path.exists("dist"):
-    popen("pbin/build")
+    popen("fin/build")
 
 
 popen("python3 -mvirtualenv --system-site-packages env")
