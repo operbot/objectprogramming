@@ -3,7 +3,7 @@
 # pylint: disable=C0115,C0116,C0413,C0209
 
 
-"object programming command"
+"command"
 
 
 ## import
@@ -37,10 +37,10 @@ class CLI(Handler):
 ## utility
 
 
-def importer(packagename, modulename):
-    name = "%s.%s" % (packagename, modulename)
+def importer(pname, mname):
+    name = "%s.%s" % (pname, mname)
     try:
-        mod = importlib.import_module(name, packagename)
+        mod = importlib.import_module(name, pname)
         scan(mod)
     except ModuleNotFoundError:
         pass

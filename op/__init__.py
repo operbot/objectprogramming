@@ -87,6 +87,7 @@ def __dir__():
             'edit',
             'elapsed',
             'find',
+            'from_exception',
             'items',
             'keys',
             'kind',

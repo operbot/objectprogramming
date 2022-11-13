@@ -9,6 +9,7 @@ import os
 
 
 def popen(txt):
+    "run command"
     for line in os.popen(txt).readlines():
         print(line)
 

@@ -1,5 +1,5 @@
 # This file is placed in the Public Domain.
-
+# pylint: disable=C0115,C0116,C0209,W0212,W1514,R1732
 
 "runtime"
 
@@ -8,6 +8,7 @@
 
 
 import atexit
+import os
 import readline
 import rlcompleter
 import sys
@@ -15,7 +16,7 @@ import termios
 import time
 
 
-from .obj import Default, keys, printable, update
+from .obj import Default, keys, update
 from .hdl import Command, parse
 
 
@@ -30,7 +31,7 @@ def __dir__():
             "daemon",
             "setcompleter",
             "wrap"
-           ) 
+           )
 
 
 __all__ = __dir__()
@@ -61,13 +62,12 @@ class Completer(rlcompleter.Completer):
 ## utility
 
 
-def banner(name, cfg):
+def banner(name):
     print(
-          "%s started at %s %s" % (
-                                   name.upper(),
-                                   time.ctime(time.time()).replace("  ", " "),
-                                   printable(cfg, "debug,verbose")
-                                  )
+          "%s started at %s" % (
+                                name.upper(),
+                                time.ctime(time.time()).replace("  ", " "),
+                               )
          )
 
 
@@ -76,12 +76,12 @@ def boot(name):
     txt = ' '.join(sys.argv[1:])
     cfg = parse(txt)
     update(Cfg, cfg)
-    banner(name, cfg)
+    banner(name)
     return cfg
 
 
 def daemon(silent=False):
-    pid = os.fork() 
+    pid = os.fork()
     if pid != 0:
         os._exit(0)
     os.setsid()
@@ -93,6 +93,7 @@ def daemon(silent=False):
         ses = open("/dev/null", 'a+')
         os.dup2(sos.fileno(), sys.stdout.fileno())
         os.dup2(ses.fileno(), sys.stderr.fileno())
+
 
 
 def setcompleter(optionlist):

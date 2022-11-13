@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 # This file is placed in the Public Domain.
-# pylint: disable=C0116,W0611,C0413
+# pylint: disable=C0116,W0611,C0413,C0209
 
 
 "object programming"
+
+
+NAME = "opf"
+
+
+## import
 
 
 import os
@@ -12,63 +18,22 @@ import sys
 import time
 
 
-sys.path.insert(0, os.getcwd())
-sys.path.insert(0, "lib")
+from op import Wd, elapsed, fntime, find, keys, printable
 
 
-from op import Wd, keys, fntime, find, printable
+## define
 
 
 Wd.workdir = os.path.expanduser("~/.op")
 
 
-starttime = time.time()
-
-
-def elapsed(seconds, short=True):
-    txt = ""
-    nsec = float(seconds)
-    year = 365*24*60*60
-    week = 7*24*60*60
-    nday = 24*60*60
-    hour = 60*60
-    minute = 60
-    years = int(nsec/year)
-    nsec -= years*year
-    weeks = int(nsec/week)
-    nsec -= weeks*week
-    nrdays = int(nsec/nday)
-    nsec -= nrdays*nday
-    hours = int(nsec/hour)
-    nsec -= hours*hour
-    minutes = int(nsec/minute)
-    sec = nsec - minutes*minute
-    if years:
-        txt += "%sy" % years
-    if weeks:
-        nrdays += weeks * 7
-    if nrdays:
-        txt += "%sd" % nrdays
-    if years and short and txt:
-        return txt
-    if hours:
-        txt += "%sh" % hours
-    if nrdays and short and txt:
-        return txt
-    if minutes:
-        txt += "%sm" % minutes
-    if hours and short and txt:
-        return txt
-    if sec != 0:
-        txt += "%ss" % int(sec)
-    txt = txt.strip()
-    return txt
+## utility
 
 
 def fnd(args):
     "fnd <workdir> [type] [selector]"
     if len(args) == 0:
-        print("op workdir [type] [selector]")
+        print("%s workdir [type] [selector]" % NAME)
         return
     wdr = args[0]
     if not os.path.exists(wdr):
@@ -94,6 +59,9 @@ def fnd(args):
         print(txt)
     if not nmr:
         print("no result")
+
+
+## runtime
 
 
 fnd(sys.argv[1:])

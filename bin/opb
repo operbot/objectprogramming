@@ -6,43 +6,36 @@
 "bot"
 
 
-__name__ = "opb"
-
-
 ## import
 
 
-import atexit
 import os
-import readline
-import rlcompleter
 import signal
 import sys
-import termios
-import time
 
 
-from op import Cfg, Command, Event, Handler, Wd
-from op import keys, printable, parse, scan, update
-from op.run import Completer, boot, wrap
-
-
-from opm.irc import Config
+from op import Command, Event, Handler, Wd
+from op import printable, scan
+from op.run import boot, wrap
 
 
 from opm import cmds, irc, rss
+from opm.irc import Config
 
 
 ## define
 
 
-Config.nick = __name__
-Config.channel = "#%s" % __name__
-Config.realname = __name__
-Config.username = __name__
+NAME = "opb"
 
 
-Wd.workdir = os.path.expanduser("~/.%s" % __name__)
+Config.nick = NAME
+Config.channel = "#%s" % NAME
+Config.realname = NAME
+Config.username = NAME
+
+
+Wd.workdir = os.path.expanduser("~/.%s" % NAME)
 
 
 ## class

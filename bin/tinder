@@ -6,29 +6,27 @@
 "tinder"
 
 
+## import
+
 import os
 import random
 import shutil
 import sys
-import termios
 import time
-import traceback
 import _thread
 
 
-sys.path.insert(0, os.getcwd())
+from op import Command, Event, Handler, Object, Wd
+from op import elapsed, launch, locked, parse, scan
 
 
-
-from op.obj import Wd, Object
-from op.hdl import Command, Event, Handler
-from op.hdl import launch, parse, scan
-from op.run import Cfg
-from op.thr import name
-from op.utl import elapsed, locked
+from op.run import Cfg, wrap
 
 
 from opm import cmds, fnd, irc, rss
+
+
+## define
 
 
 paylock = _thread.allocate_lock()
@@ -36,12 +34,6 @@ paylock = _thread.allocate_lock()
 
 Wd.workdir = ".test"
 Cfg.debug = True
-
-
-scan(cmds)
-scan(fnd)
-scan(irc)
-scan(rss)
 
 
 errors = []
@@ -69,9 +61,8 @@ param.rss = ["https://www.reddit.com/r/python/.rss"]
 param.tdo = ["test4", ""]
 
 
-def cprint(txt):
-    print(txt)
-    sys.stdout.flush()
+## class
+
 
 
 class CLI(Handler):
@@ -79,6 +70,11 @@ class CLI(Handler):
     def raw(self, txt):
         if Cfg.verbose:
             cprint(txt)
+
+
+def cprint(txt):
+    print(txt)
+    sys.stdout.flush()
 
 
 def consume(evt):
@@ -93,13 +89,6 @@ def consume(evt):
         except ValueError:
             continue
     return res
-
-
-def from_exception(ex, txt="", sep=" "):
-    result = []
-    for frm in traceback.extract_tb(ex.__traceback__):
-        result.append("%s:%s" % (os.sep.join(frm.filename.split(os.sep)[-2:]), frm.lineno))
-    return "%s(%s) %s" % (name(ex), ex, " ".join(result))
 
 
 
@@ -120,15 +109,13 @@ def payload(clt):
     return _nr
 
 
-def wrap(func):
-    fds = sys.stdin.fileno()
-    old = termios.tcgetattr(fds)
-    try:
-        func()
-    except (EOFError, KeyboardInterrupt):
-        cprint("")
-    finally:
-        termios.tcsetattr(fds, termios.TCSADRAIN, old)
+## runtime
+
+
+scan(cmds)
+scan(fnd)
+scan(irc)
+scan(rss)
 
 
 def main():

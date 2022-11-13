@@ -6,21 +6,18 @@
 "object programming shell"
 
 
+NAME = "ops"
+
 ## import
 
 
 import importlib
 import os
-import readline
-import sys
-import termios
 import time
 
 
-sys.path.insert(0, os.getcwd())
-
-
 from op import Event, Handler, Wd, launch, scan, scandir
+from op.run import banner, wrap
 
 
 from opm import cmds
@@ -29,7 +26,7 @@ from opm import cmds
 ## define
 
 
-Wd.workdir = os.path.expanduser("~/.op")
+Wd.workdir = os.path.expanduser("~/.%s" % NAME)
 
 
 starttime = time.time()
@@ -64,10 +61,6 @@ class Shell(Handler):
 ## utility
 
 
-def banner():
-    print("OPS started at %s" % time.ctime(time.time()).replace("  ", " "))
-
-
 def importer(packagename, modulename):
     name = "%s.%s" % (packagename, modulename)
     try:
@@ -75,23 +68,6 @@ def importer(packagename, modulename):
         scan(mod)
     except ModuleNotFoundError:
         pass
-
-
-def wrap(func):
-    fds = sys.stdin.fileno()
-    gotterm = True
-    try:
-        old = termios.tcgetattr(fds)
-    except termios.error:
-        gotterm = False
-    readline.redisplay()
-    try:
-        func()
-    except (EOFError, KeyboardInterrupt):
-        print("")
-    finally:
-        if gotterm:
-            termios.tcsetattr(fds, termios.TCSADRAIN, old)
 
 
 ## runtime
@@ -102,7 +78,7 @@ shl = Shell()
 
 
 def main():
-    banner()
+    banner(NAME)
     scandir("mod", importer)
     scan(cmds)
     shl.start()
