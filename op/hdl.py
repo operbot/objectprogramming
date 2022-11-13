@@ -284,6 +284,8 @@ def parse(txt):
     prs.parse(txt)
     if "c" in prs.opts:
         prs.console = True
+    if "d" in prs.opts:
+        prs.debug = True
     if "v" in prs.opts:
         prs.verbose = True
     return prs

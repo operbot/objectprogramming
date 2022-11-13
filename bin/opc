@@ -6,6 +6,9 @@
 "object programming command"
 
 
+## import
+
+
 import importlib
 import os
 import sys
@@ -15,12 +18,14 @@ import time
 sys.path.insert(0, os.getcwd())
 
 
-from op import Wd
-from opm.run import Bus, Event, Handler, parse, scan, scandir
+from op import Bus, Event, Handler, Wd, parse, scan, scandir
 from opm import cmds, irc
 
 
 Wd.workdir = os.path.expanduser("~/.op")
+
+
+## define
 
 
 scan(cmds)
@@ -30,13 +35,16 @@ scan(irc)
 starttime = time.time()
 
 
+## class
+
+
 class CLI(Handler):
 
     def raw(self, txt):
         print(txt)
 
 
-cli = CLI()
+## utility
 
 
 def importer(packagename, modulename):
@@ -46,6 +54,11 @@ def importer(packagename, modulename):
         scan(cli, mod)
     except ModuleNotFoundError:
         pass
+
+
+## runtime
+
+cli = CLI()
 
 
 def main():

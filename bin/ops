@@ -6,6 +6,9 @@
 "object programming shell"
 
 
+## import
+
+
 import importlib
 import os
 import readline
@@ -17,11 +20,14 @@ import time
 sys.path.insert(0, os.getcwd())
 
 
-from op import Cfg, Wd, printable
+from op import Cfg, Wd, printable, parse
 from op import Event, Handler, launch, scan, scandir
 
 
 from opm import cmds
+
+
+## define
 
 
 Wd.workdir = os.path.expanduser("~/.op")
@@ -36,8 +42,7 @@ class CLI(Handler):
         print(txt)
 
 
-cli = CLI()
-
+## class
 
 
 class Shell(Handler):
@@ -57,12 +62,11 @@ class Shell(Handler):
         launch(self.loop)
 
 
-shl = Shell()
+## utility
 
 
 def banner():
     print("OPS (Object Programming Shell) started at %s" % time.ctime(time.time()).replace("  ", " "))
-    print(printable(Cfg, skip="password,username,realname"))
 
 
 def importer(packagename, modulename):
@@ -89,6 +93,13 @@ def wrap(func):
     finally:
         if gotterm:
             termios.tcsetattr(fds, termios.TCSADRAIN, old)
+
+
+## runtime
+
+
+cli = CLI()
+shl = Shell()
 
 
 def main():

@@ -3,7 +3,10 @@
 # pylint: disable=C0115,C0116,R0201,C0413
 
 
-"object programming internet relay chat"
+"internet relay chat"
+
+
+## import
 
 
 import importlib
@@ -12,6 +15,7 @@ import queue
 import readline
 import socket
 import sys
+import termios
 import time
 import textwrap
 import threading
@@ -23,18 +27,25 @@ sys.path.insert(0, os.getcwd())
 
 from op import Class, Default, Object, Wd
 from op import edit, keys, last, locked, printable, register, save
-from opm.run import Bus, Command, Event, Handler, Shell, command, launch
-from opm.run import scandir
+from op import Bus, Command, Event, Handler, command, launch, scan, scandir
+
+
 from opm.irc import IRC
 
 
 from opm import cmds, irc
 
 
+## define
+
+
 Wd.workdir = os.path.expanduser("~/.op")
 
 
 starttime = time.time()
+
+
+## class
 
 
 class CLI(Handler):
@@ -67,9 +78,7 @@ class Shell(Handler):
             time.sleep(1.0)
 
 
-cli = CLI()
-irc = IRC()
-shl = Shell()
+## utility
 
 
 def banner():
@@ -86,18 +95,42 @@ def importer(packagename, modulename):
         pass
 
 
+def wrap(func):
+    fds = sys.stdin.fileno()
+    gotterm = True
+    try:
+        old = termios.tcgetattr(fds)
+    except termios.error:
+        gotterm = False
+    readline.redisplay()
+    try:
+        func()
+    except (EOFError, KeyboardInterrupt):
+        print("")
+    finally:
+        if gotterm:
+            termios.tcsetattr(fds, termios.TCSADRAIN, old)
+
+
+## runtime
+
+
+cli = CLI()
+irc = IRC()
+shl = Shell()
+
+
 def main():
     scandir("mod", importer)
     if len(sys.argv) > 1:
         return command(cli, " ".join(sys.argv[1:]))
     banner()
+    scan(cmds)
+    scan(irc)
     irc.start()
-    irc.scan(cmds)
     shl.start()
-    shl.scan(cmds)
-    shl.scan(irc)
     shl.wait()
 
 
 if __name__ == "__main__":
-    main()
+    wrap(main)

@@ -1,17 +1,24 @@
 # This file is placed in the Public Domain.
 
 
-"command tests"
+"command"
+
+
+## import
 
 
 import unittest
 
 
-from gcid import Command, Event, Handler, Object
-from gcid.run import Cfg
+from op import Cfg, Command, Event, Handler, Object
+
+
+## define
+
 
 events = []
 skip = ["cfg",]
+
 
 param = Object()
 param.cmd = [""]
@@ -23,28 +30,15 @@ param.mre = [""]
 param.thr = [""]
 
 
+## class
+
+
 class CLI(Handler):
 
     def say(self, channel, txt):
         if Cfg.verbose:
             print(txt)
 
-
-def getmain(name):
-    main = __import__("__main__")
-    return getattr(main, name, None)
-
-
-def consume(evt):
-    fixed = []
-    for _e in evt:
-        _e.wait()
-        fixed.append(_e)
-    for fix in fixed:
-        try:
-            evt.remove(fix)
-        except ValueError:
-            continue
 
 
 class TestCommands(unittest.TestCase):
@@ -65,3 +59,23 @@ class TestCommands(unittest.TestCase):
                 events.append(evt)
         consume(events)
         self.assertTrue(not events)
+
+
+## utility
+
+
+def getmain(name):
+    main = __import__("__main__")
+    return getattr(main, name, None)
+
+
+def consume(evt):
+    fixed = []
+    for _e in evt:
+        _e.wait()
+        fixed.append(_e)
+    for fix in fixed:
+        try:
+            evt.remove(fix)
+        except ValueError:
+            continue
