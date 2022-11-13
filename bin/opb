@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
 # This file is placed in the Public Domain.
+# pylint: disable=C0115,C0116,C0209
+
+
+"bot"
+
+
+__name__ = "opb"
+
+
+## import
 
 
 import atexit
@@ -12,42 +22,36 @@ import termios
 import time
 
 
-sys.path.insert(0, os.getcwd())
+from op import Cfg, Command, Event, Handler, Wd
+from op import keys, printable, parse, scan, update
+from op.run import Completer, boot, wrap
 
 
-from op import Class, Wd, keys, last, printable, update
-from op import Cfg, Command, Event, Handler, parse, scan
-
-
-from opm.irc import Config, IRC
-from opm.rss import Fetcher
+from opm.irc import Config
 
 
 from opm import cmds, irc, rss
 
 
-Config.nick = "operbot"
-Config.channel = "#operbot"
-Config.realname = "operator bot"
-Config.username = "operbot"
+## define
 
 
-Wd.workdir = os.path.expanduser("~/.op")
+Config.nick = __name__
+Config.channel = "#%s" % __name__
+Config.realname = __name__
+Config.username = __name__
 
 
-scan(cmds)
-scan(irc)
-scan(rss)
+Wd.workdir = os.path.expanduser("~/.%s" % __name__)
+
+
+## class
 
 
 class Console(Handler):
 
-    @staticmethod
-    def announce(txt):
-        pass
 
-    @staticmethod
-    def handle(event):
+    def handle(self, event):
         Command.handle(event)
         event.wait()
 
@@ -57,46 +61,12 @@ class Console(Handler):
         event.orig = repr(self)
         return event
 
-    @staticmethod
-    def raw(txt):
+
+    def raw(self, txt):
         print(txt)
 
 
-class Completer(rlcompleter.Completer):
-
-    def __init__(self, options):
-        super().__init__()
-        self.options = options
- 
-    def complete(self, text, state):
-        if state == 0:
-            if text:
-                self.matches = [s for s in self.options if s and s.startswith(text)]
-            else:
-                self.matches = self.options[:]
-        try:
-            return self.matches[state]
-        except IndexError:
-            return None
-
-
-def banner(cfg):
-    print(
-          "OPB (Object Programming Bot)  started at %s %s" % (
-                                     time.ctime(time.time()).replace("  ", " "),
-                                     printable(cfg, "debug,verbose")
-                                    )
-         )
-
-
-def boot():
-    signal.signal(signal.SIGHUP, hup)
-    setcompleter(keys(Command.cmd))
-    txt = ' '.join(sys.argv[1:])
-    cfg = parse(txt)
-    update(Cfg, cfg)
-    banner(cfg)
-    return cfg
+## utility
 
 
 def hup(_sig, _frame):
@@ -104,47 +74,24 @@ def hup(_sig, _frame):
     sys.stdout.flush()
 
 
-def isopt(ostr):
-    for opt in ostr:
-        if opt in Cfg.opts:
-            return True
-    return False
+
+## runtime
 
 
-def setcompleter(optionlist):
-    completer = Completer(optionlist)
-    readline.set_completer(completer.complete)
-    readline.parse_and_bind("tab: complete")
-    atexit.register(lambda: readline.set_completer(None))
-
-
-def wrap(func):
-    fds = sys.stdin.fileno()
-    gotterm = True
-    try:
-        old = termios.tcgetattr(fds)
-    except termios.error:
-        gotterm = False
-    readline.redisplay()
-    try:
-        func()
-    except (EOFError, KeyboardInterrupt):
-        print("")
-    finally:
-        if gotterm:
-            termios.tcsetattr(fds, termios.TCSADRAIN, old)
+signal.signal(15, hup)
 
 
 def main():
-    boot()
-    bot = IRC()
-    bot.start()
+    boot(__name__)
+    scan(cmds)
+    scan(irc)
+    scan(rss)
+    bot = irc.init()
     print(printable(bot.cfg, "nick,channel,server,port,sasl"))
-    fetcher = Fetcher()
-    fetcher.start()
+    rss.init()
     csl = Console()
     csl.start()
     csl.wait()
-        
+
 
 wrap(main)

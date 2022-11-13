@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# pylint: disable=E1101,C0116,C0413,C0219,W0613
+# pylint: disable=E1101,C0115,C0116,C0413,W0613,C0209
 # This file is placed in the Public Domain.
 
 
@@ -105,10 +105,10 @@ def from_exception(ex, txt="", sep=" "):
 
 @locked(paylock)
 def payload(clt):
-    cmds = sorted(Command.cmd)
-    random.shuffle(cmds)
+    cmdz = sorted(Command.cmd)
+    random.shuffle(cmdz)
     _nr = 0
-    for cmd in cmds:
+    for cmd in cmdz:
         for ex in getattr(param, cmd, [""]):
             evt = Event()
             evt.txt = cmd + " " + ex

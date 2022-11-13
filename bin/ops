@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # This file is placed in the Public Domain.
-# pylint: disable=C0115,C0116,R0201,C0413
+# pylint: disable=C0115,C0116,C0413,C0209
 
 
 "object programming shell"
@@ -20,8 +20,7 @@ import time
 sys.path.insert(0, os.getcwd())
 
 
-from op import Cfg, Wd, printable, parse
-from op import Event, Handler, launch, scan, scandir
+from op import Event, Handler, Wd, launch, scan, scandir
 
 
 from opm import cmds
@@ -66,14 +65,14 @@ class Shell(Handler):
 
 
 def banner():
-    print("OPS (Object Programming Shell) started at %s" % time.ctime(time.time()).replace("  ", " "))
+    print("OPS started at %s" % time.ctime(time.time()).replace("  ", " "))
 
 
 def importer(packagename, modulename):
     name = "%s.%s" % (packagename, modulename)
     try:
         mod = importlib.import_module(name, packagename)
-        scan(shl, mod)
+        scan(mod)
     except ModuleNotFoundError:
         pass
 

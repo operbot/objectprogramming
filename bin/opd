@@ -6,46 +6,40 @@
 "Object Programming Daemon"
 
 
-import importlib
+## import
+
+
 import os
-import queue
-import readline
-import socket
 import sys
-import time
-import textwrap
-import threading
-import _thread
+
+from op import Wd, scan
 
 
-sys.path.insert(0, os.getcwd())
-
-
-from op import Class, Default, Object, Wd
-from op import edit, keys, last, locked, printable, register, save
-from opm.run import Bus, Command, Event, Handler, Shell, command, launch, scandir
 from opm.irc import Config, IRC
 
 
 from opm import cmds, irc
 
 
+## define
+
+
+Config.nick = "opd"
+Config.channel = "#opd"
+Config.realname = "object programming daemon"
+Config.username = "opd"
+
+
 Wd.workdir = os.path.expanduser("~/.op")
 
 
-bot = IRC()
-
-
-def banner():
-    print("OPD (Object Prgramming Daemon) started at %s" % time.ctime(time.time()).replace("  ", " "))
-    print(printable(bot.cfg, skip="password,username,realname"))
+## utility
 
 
 def daemon(silent=False):
     pid = os.fork() 
     if pid != 0:
         os._exit(0)
-   
     os.setsid()
     os.umask(0)
     sis = open("/dev/null", 'r')
@@ -57,12 +51,17 @@ def daemon(silent=False):
         os.dup2(ses.fileno(), sys.stderr.fileno())
 
 
+## runtime
+
+
+bot = IRC()
+
+
 def main():
     sys.argv[0] = "opd"
-    banner()
     daemon()
-    bot.scan(cmds)
-    bot.scan(irc)
+    scan(cmds)
+    scan(irc)
     bot.start()
     bot.wait()
 

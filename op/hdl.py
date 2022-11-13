@@ -231,7 +231,7 @@ class Handler(Callback):
         Command.add(cmd)
 
     def announce(self, txt):
-        pass
+        self.raw(txt)
 
     def handle(self, event):
         self.dispatch(event)
@@ -247,7 +247,7 @@ class Handler(Callback):
         self.queue.put_nowait(event)
 
     def raw(self, txt):
-        pass
+        raise NotImplementedError("raw")
 
     def restart(self):
         self.stop()
