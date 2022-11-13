@@ -5,16 +5,10 @@
 "event"
 
 
-## import
-
-
 import unittest
 
 
 from op import Event
-
-
-## class
 
 
 class TestEvent(unittest.TestCase):

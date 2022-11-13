@@ -1,9 +1,8 @@
+# pylint: disable=E1101,C0116,C0411
 # This file is placed in the Public Domain.
-# pylint: disable=C0115,C0116,C2801
+
+
 "object"
-
-
-## import
 
 
 import json
@@ -11,13 +10,10 @@ import os
 import unittest
 
 
-from op import Object, Wd, items, keys, register, update, values
-from op import edit, kind, load, save
-from op import ObjectDecoder, ObjectEncoder
-from op import printable
-
-
-## define
+from op.obj import Object, Wd, items, keys, register, update, values
+from op.obj import edit, kind, load, save
+from op.obj import ObjectDecoder, ObjectEncoder
+from op.obj import printable
 
 
 Wd.workdir = ".test"
@@ -81,17 +77,12 @@ attrs2 = (
          )
 
 
-## utility
-
 def dumps(name):
     return json.dumps(name, cls=ObjectEncoder)
 
 
 def loads(name):
     return json.loads(name, cls=ObjectDecoder)
-
-
-## class
 
 
 class TestObject(unittest.TestCase):
@@ -125,6 +116,10 @@ class TestObject(unittest.TestCase):
         self.assertEqual(
             dir(obj), list(attrs2)
         )
+
+    def test_doc(self):
+        obj = Object()
+        self.assertEqual(obj.__doc__, None)
 
     def test_format(self):
         obj = Object()

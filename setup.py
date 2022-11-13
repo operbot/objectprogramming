@@ -20,7 +20,7 @@ setup(
     description="functional programming with objects",
     long_description=read(),
     license="Public Domain",
-    packages=["op"],
+    packages=["op","opm"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: Public Domain",

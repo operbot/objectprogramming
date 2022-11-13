@@ -5,16 +5,10 @@
 "database"
 
 
-## import
-
-
 import unittest
 
 
 from op import Db
-
-
-## class
 
 
 class TestDbs(unittest.TestCase):

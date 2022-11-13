@@ -5,16 +5,10 @@
 "bus"
 
 
-## import
-
-
 import unittest
 
 
 from op import Bus, Handler
-
-
-## class
 
 
 class Client(Handler):
@@ -27,7 +21,7 @@ class Client(Handler):
 
     def announce(self, txt):
         self.raw(txt)
-        
+
     def raw(self, txt):
         Client.gotcha = True
 

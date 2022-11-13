@@ -5,16 +5,10 @@
 "handler"
 
 
-## import
-
-
 import unittest
 
 
 from op import Handler
-
-
-## class
 
 
 class TestHandler(unittest.TestCase):

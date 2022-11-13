@@ -220,6 +220,7 @@ def values(obj):
 ## json
 
 
+
 class ObjectDecoder(json.JSONDecoder):
 
     def  __init__(self, *args, **kwargs):
@@ -309,8 +310,8 @@ def save(obj):
 
 
 @locked(disklock)
-def write(obj):
-    opath = Wd.getpath(obj.__fnm__)
+def write(obj, path=None):
+    opath = Wd.getpath(path or obj.__fnm__)
     cdir(opath)
     if os.path.exists(opath):
         os.chmod(opath, 0o666)

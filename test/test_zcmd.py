@@ -1,19 +1,14 @@
 # This file is placed in the Public Domain.
 # pylint: disable=C0115,C0116
 
-"command"
 
-
-## import
+"command tests"
 
 
 import unittest
 
 
 from op import Cfg, Command, Event, Handler, Object
-
-
-## define
 
 
 events = []
@@ -30,15 +25,28 @@ param.mre = [""]
 param.thr = [""]
 
 
-## class
-
-
 class CLI(Handler):
 
     def raw(self, txt):
         if Cfg.verbose:
             print(txt)
 
+
+def getmain(name):
+    main = __import__("__main__")
+    return getattr(main, name, None)
+
+
+def consume(evt):
+    fixed = []
+    for _e in evt:
+        _e.wait()
+        fixed.append(_e)
+    for fix in fixed:
+        try:
+            evt.remove(fix)
+        except ValueError:
+            continue
 
 
 class TestCommands(unittest.TestCase):
@@ -59,23 +67,3 @@ class TestCommands(unittest.TestCase):
                 events.append(evt)
         consume(events)
         self.assertTrue(not events)
-
-
-## utility
-
-
-def getmain(name):
-    main = __import__("__main__")
-    return getattr(main, name, None)
-
-
-def consume(evt):
-    fixed = []
-    for _e in evt:
-        _e.wait()
-        fixed.append(_e)
-    for fix in fixed:
-        try:
-            evt.remove(fix)
-        except ValueError:
-            continue
