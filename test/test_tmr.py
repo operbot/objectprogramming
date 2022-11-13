@@ -1,4 +1,5 @@
 # This file is placed in the Public Domain.
+# pylint: disable=C0115,C0116
 
 
 "timer"
@@ -14,6 +15,7 @@ from op import Timer
 
 
 ## define
+
 
 def test():
     pass

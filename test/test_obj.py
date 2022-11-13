@@ -1,7 +1,5 @@
-# pylint: disable=E1101,C0116,C0411
 # This file is placed in the Public Domain.
-
-
+# pylint: disable=C0115,C0116,C2801
 "object"
 
 
@@ -20,6 +18,7 @@ from op import printable
 
 
 ## define
+
 
 Wd.workdir = ".test"
 

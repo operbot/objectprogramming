@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+# This file is placed in the Public Domain.
+
+
+"lint"
+
+
+## import
+
+
+import os
+import sys
+
+
+## define
+
+
+cwd = os.getcwd()
+
+
+sys.path.insert(0, cwd)
+
+
+SKIP = ["---", "Your code"]
+
+
+## utility
+
+
+SKIPDIR = [".git", ".pytest_cache", "env", ".egg-info"]
+
+
+## utility
+
+
+def loop(path, txt):
+    "walk directories"
+    for fnn in os.listdir(path):
+        if skipdir(fnn):
+            continue
+        os.chdir(fnn)
+        popen(txt)
+        os.chdir("..")
+
+
+def popen(txt):
+    "run command"
+    for line in os.popen(txt).readlines():
+        if skip(line, SKIP):
+            continue
+        print(line.rstrip())
+
+
+
+def skip(txt, skiplist):
+    "skip files"
+    txt = txt.strip()
+    if not txt:
+        return True
+    for skp in skiplist:
+        if skp in txt:
+            return True
+    return False
+
+
+def skipdir(path):
+    "skip directories"
+    if not os.path.isdir(path):
+        return True
+    for skd in SKIPDIR:
+        if path.endswith(skd):
+            return True
+    return False
+
+
+## runtime
+
+
+if __name__ == "__main__":
+    loop(cwd, "pylint *")

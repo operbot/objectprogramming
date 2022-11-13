@@ -2,7 +2,7 @@
 # This file is placed in the Public Domain.
 
 
-"test"
+"wipe"
 
 
 ## import
@@ -23,5 +23,5 @@ def popen(txt):
 ## runtime
 
 
-popen("bin/clean")
-popen("pytest")
+popen("pbin/clean")
+popen("rm -fR env")

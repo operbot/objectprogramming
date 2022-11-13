@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+# This file is placed in the Public Domain.
+
+
+"all"
+
+
+## import
+
+
+import os
+
+
+## utility
+
+
+def popen(txt):
+    "run command"
+    for line in os.popen(txt).readlines():
+        print(line.strip())
+
+
+## runtime
+
+
+print("\ncleaning\n")
+popen("pbin/clean")
+print("\nbuilding\n")
+popen("pbin/build")
+print("\ntesting\n")
+popen("pbin/test")
+print("\nlinting\n")
+popen("pbin/lint")
+print("\ncreating environment\n")
+popen("pbin/env")
