@@ -5,20 +5,14 @@
 "find"
 
 
-## import
-
-
 import time
 
 
-from op.obj import Wd, find, fntime, keys, printable
-from op.utl import elapsed
+from op.object import Wd, find, fntime, keys, printable
+from op.utils import elapsed
 
 
-## command
-
-
-def fnd(event):
+def find(event):
     if not event.args:
         res = ",".join(sorted([x.split(".")[-1].lower() for x in Wd.types()]))
         if res:

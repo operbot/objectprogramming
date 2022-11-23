@@ -5,20 +5,14 @@
 "mailbox"
 
 
-## import
-
-
 import mailbox
 import os
 import time
 
 
-from op.obj import Class, Object
-from op.obj import find, fntime, printable, save, update
-from op.utl import elapsed
-
-
-## define
+from op.object import Class, Object
+from op.object import find, fntime, printable, save, update
+from op.utils import elapsed
 
 
 def __dir__():
@@ -63,9 +57,6 @@ monthint = {
 }
 
 
-## class
-
-
 class Email(Object):
 
     def __init__(self, *args, **kwargs):
@@ -74,9 +65,6 @@ class Email(Object):
 
 
 Class.add(Email)
-
-
-## utility
 
 
 def to_date(date):
@@ -113,9 +101,6 @@ def to_date(date):
                         except (IndexError, KeyError):
                             ddd = ""
     return ddd
-
-
-## command
 
 
 def cor(event):

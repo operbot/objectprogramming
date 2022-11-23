@@ -5,20 +5,14 @@
 "commands"
 
 
-## import
-
-
 import threading
 import time
 
 
-from op.hdl import Bus, Command
-from op.obj import Class, Object, find, fntime, save, update
-from op.thr import name
-from op.utl import elapsed
-
-
-## define
+from op.handler import Bus, Command
+from op.object import Class, Object, find, fntime, save, update
+from op.thread import name
+from op.util import elapsed
 
 
 starttime = time.time()
@@ -35,7 +29,6 @@ def __dir__():
             'thr',
             'upt'
            )
-## class
 
 
 class Log(Object):
@@ -54,9 +47,6 @@ class Todo(Log):
 
 
 Class.add(Todo)
-
-
-## command
 
 
 def cmd(event):

@@ -5,19 +5,13 @@
 "udp to irc relay"
 
 
-## import
-
-
 import socket
 import time
 
 
-from op.hdl import Bus
-from op.obj import Class, Object, last
-from op.thr import launch
-
-
-## define
+from op.handler import Bus
+from op.object import Class, Object, last
+from op.thread import launch
 
 
 def __dir__():
@@ -35,9 +29,6 @@ def init():
     udp = UDP()
     udp.start()
     return udp
-
-
-## class
 
 
 class Cfg(Object):
@@ -86,9 +77,6 @@ class UDP(Object):
     def start(self):
         last(self.cfg)
         launch(self.server)
-
-
-## runtime
 
 
 Class.add(Cfg)

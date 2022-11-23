@@ -1,32 +1,17 @@
 # This file is placed in the Public Domain.
-# pylint: disable=R,C,W,C0302
+# pylint: disable=C0112,C0115,C0116,W0613,W0108,R0903
 
 
 "object"
 
 
-## import
-
-
 import datetime
-import getpass
-import inspect
 import json
 import os
 import pathlib
-import pwd
-import queue
-import threading
 import time
-import types
 import uuid
 import _thread
-
-
-from stat import ST_UID, ST_MODE, S_IMODE
-
-
-## define
 
 
 def __dir__():
@@ -65,10 +50,7 @@ def __dir__():
 __all__ = __dir__()
 
 
-
 def locked(lock):
-
-    noargs = False
 
     def lockeddec(func, *args, **kwargs):
 
@@ -91,9 +73,6 @@ def locked(lock):
 
 
 disklock = _thread.allocate_lock()
-
-
-## object
 
 
 class Object:
@@ -125,7 +104,7 @@ class Object:
 
     def __getitem__(self, key):
         self.__dict__.__getitem__(key)
-          
+
     def __iter__(self):
         return iter(self.__dict__)
 
@@ -217,9 +196,6 @@ def values(obj):
     return obj.__dict__.values()
 
 
-## json
-
-
 
 class ObjectDecoder(json.JSONDecoder):
 
@@ -270,6 +246,7 @@ class ObjectEncoder(json.JSONEncoder):
         return json.JSONEncoder.iterencode(self, o, *args, **kwargs)
 
 
+
 @locked(disklock)
 def dump(obj, opath):
     cdir(opath)
@@ -277,7 +254,6 @@ def dump(obj, opath):
         json.dump(
             obj.__dict__, ofile, cls=ObjectEncoder, indent=4, sort_keys=True
         )
-    os.chmod(opath, 0o444)
     return opath
 
 
@@ -310,26 +286,20 @@ def save(obj):
 
 
 @locked(disklock)
-def write(obj, path=None):
-    opath = Wd.getpath(path or obj.__fnm__)
+def write(obj):
+    opath = Wd.getpath(obj.__fnm__)
     cdir(opath)
-    if os.path.exists(opath):
-        os.chmod(opath, 0o666)
     with open(opath, "w", encoding="utf-8") as ofile:
         json.dump(
             obj.__dict__, ofile, cls=ObjectEncoder, indent=4, sort_keys=True
         )
-    os.chmod(opath, 0o444)
     return opath
-
-
-## database
 
 
 class Db:
 
     @staticmethod
-    def find(otp, selector=None, index=None, timed=None, deleted=False):
+    def find(otp, selector=None, index=None, timed=None, deleted=True):
         if selector is None:
             selector = {}
         nmr = -1
@@ -343,7 +313,7 @@ class Db:
             nmr += 1
             if index is not None and nmr != index:
                 continue
-            res.append(obj)            
+            res.append(obj)
         return res
 
     @staticmethod
@@ -351,7 +321,7 @@ class Db:
         res =  sorted(Db.find(otp, selector, index, timed), key=lambda x: fntime(x.__fnm__))
         if res:
             return res[-1]
-
+        return None
 
 def fnclass(path):
     pth = []
@@ -368,27 +338,27 @@ def fns(otp, timed=None):
     if not otp:
         return []
     assert Wd.workdir
-    p = os.path.join(Wd.workdir, "store", otp) + os.sep
+    path = os.path.join(Wd.workdir, "store", otp) + os.sep
     res = []
-    d = ""
-    for rootdir, dirs, _files in os.walk(p, topdown=False):
+    dname = ""
+    for rootdir, dirs, _files in os.walk(path, topdown=False):
         if dirs:
-            d = sorted(dirs)[-1]
-            if d.count("-") == 2:
-                dd = os.path.join(rootdir, d)
-                fls = sorted(os.listdir(dd))
+            dname = sorted(dirs)[-1]
+            if dname.count("-") == 2:
+                ddd = os.path.join(rootdir, dname)
+                fls = sorted(os.listdir(ddd))
                 if fls:
-                    p = os.path.join(dd, fls[-1])
+                    path2 = os.path.join(ddd, fls[-1])
                     if (
                         timed
                         and "from" in timed
                         and timed["from"]
-                        and fntime(p) < timed["from"]
+                        and fntime(path2) < timed["from"]
                     ):
                         continue
-                    if timed and timed.to and fntime(p) > timed.to:
+                    if timed and timed.to and fntime(path2) > timed.to:
                         continue
-                    res.append(p)
+                    res.append(path2)
     return sorted(res, key=lambda x: fntime(x))
 
 def fntime(daystr):
@@ -398,12 +368,12 @@ def fntime(daystr):
         datestr, rest = datestr.rsplit(".", 1)
     else:
         rest = ""
-    t = time.mktime(time.strptime(datestr, "%Y-%m-%d %H:%M:%S"))
+    tme = time.mktime(time.strptime(datestr, "%Y-%m-%d %H:%M:%S"))
     if rest:
-        t += float("." + rest)
+        tme += float("." + rest)
     else:
-        t = 0
-    return t
+        tme = 0
+    return tme
 
 
 def hook(path):
@@ -417,7 +387,7 @@ def hook(path):
     return obj
 
 
-def find(otp, selector=None, index=None, timed=None, deleted=False):
+def find(otp, selector=None, index=None, timed=None, deleted=True):
     names = Class.full(otp)
     if not names:
         names = Wd.types(otp)
@@ -456,9 +426,6 @@ def search(obj, selector):
     return res
 
 
-## class whitelist
-
-
 class Class:
 
     cls = {}
@@ -489,12 +456,9 @@ class Class:
         del Class.cls[oname]
 
 
-## working directory
-
-
 class Wd:
 
-    workdir = ".op"
+    workdir = ""
 
     @staticmethod
     def get():
@@ -512,8 +476,7 @@ class Wd:
     @staticmethod
     def storedir():
         sdr =  os.path.join(Wd.get(), "store", '')
-        if not os.path.exists(sdr):
-            cdir(sdr)
+        cdir(sdr)
         return sdr
 
     @staticmethod
@@ -528,18 +491,11 @@ class Wd:
         return res
 
 
-## utility
-
-
 def cdir(path):
-    if os.path.exists(path):
-        return
-    if not path.endswith(os.sep):
+    if not os.path.isdir(path):
         path = os.path.dirname(path)
-    pathlib.Path(path).mkdir(parents=True, exist_ok=True)
-    
-
-## runtime
+    ppp = pathlib.Path(path)
+    ppp.mkdir(parents=True, exist_ok=True)
 
 
 Class.add(Object)

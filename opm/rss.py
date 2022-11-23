@@ -1,11 +1,8 @@
 # This file is placed in the Public Domain.
-# pylint: disable=R0903,R1732,C0209,C0115,C0116
+# pylint: disable=R0903,C0115,C0116
 
 
 "rich site syndicate"
-
-
-## import
 
 
 import html.parser
@@ -20,15 +17,13 @@ from urllib.parse import quote_plus, urlencode
 from urllib.request import Request, urlopen
 
 
-from op import Class, Db, Default, Object, write
-from op import find, fntime, last, printable, save
-from op import edit, register, update
-from op import Bus, Cfg
-from op import Repeater, launch
-from op import elapsed, spl
-
-
-## define
+from .object import Class, Db, Default, Object, write
+from .object import find, fntime, last, printable, save
+from .object import edit, register, update
+from .handler import Bus
+from .run import Cfg
+from .thread import Repeater, launch
+from .util import elapsed, spl
 
 
 def __dir__():
@@ -52,9 +47,6 @@ def init():
     fetcher = Fetcher()
     fetcher.start()
     return fetcher
-
-
-## class
 
 
 class Feed(Default):
@@ -182,12 +174,9 @@ class Parser(Object):
         return res
 
 
-## utility
-
-
 def getfeed(url, item):
     if Cfg.debug:
-        return [Object(), Object()]
+        return []
     try:
         result = geturl(url)
     except (ValueError, HTTPError, URLError):
@@ -236,9 +225,6 @@ def unescape(text):
 
 def useragent(txt):
     return "Mozilla/5.0 (X11; Linux x86_64) " + txt
-
-
-## command
 
 
 def dpl(event):
@@ -310,7 +296,7 @@ def rss(event):
     if "http" not in url:
         event.reply("i need an url")
         return
-    res = list(find("rss", {"rss": url}))
+    res = list(last("rss", {"rss": url}))
     if res:
         event.reply("already got %s" % url)
         return
