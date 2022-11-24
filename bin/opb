@@ -6,21 +6,29 @@
 "object programming bot"
 
 
+NAME = "opb"
+
+
+import atexit
 import os
+import readline
+import rlcompleter
 import signal
 import sys
+import termios
+import time
 
 
 sys.path.insert(0, os.getcwd())
 
 
-from op import Command, Event, Handler, Wd
-from op import printable, scan
+from op import Command, Cfg, Event, Handler, Wd
+from op import parse, printable, scan, scandir
 from opm import cmds, irc, rss
 from opm.irc import Config
 
 
-NAME = "opb"
+Wd.workdir = os.path.expanduser("~/.%s" % NAME)
 
 
 Config.nick = NAME
@@ -29,7 +37,9 @@ Config.realname = NAME
 Config.username = NAME
 
 
-Wd.workdir = os.path.expanduser("~/.%s" % NAME)
+scan(cmds)
+scan(irc)
+scan(rss)
 
 
 class Console(Handler):
@@ -45,9 +55,63 @@ class Console(Handler):
         event.orig = repr(self)
         return event
 
-
     def raw(self, txt):
         print(txt)
+
+
+class Completer(rlcompleter.Completer):
+
+    def __init__(self, options):
+        super().__init__()
+        self.options = options
+
+    def complete(self, text, state):
+        if state == 0:
+            if text:
+                self.matches = [s for s in self.options if s and s.startswith(text)]
+            else:
+                self.matches = self.options[:]
+        try:
+            return self.matches[state]
+        except IndexError:
+            return None
+
+
+def banner(cfg):
+    print(
+          "%s started at %s %s" % (
+                                   NAME.upper(),
+                                   time.ctime(time.time()).replace("  ", " "),
+                                   printable(cfg, "debug,verbose")
+                                  )
+         )
+
+
+def importer(pname, mname, path):
+    mod = None
+    spec = importlib.util.spec_from_file_location(mname, path)
+    if spec:
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        scan(mod)
+    return mod
+
+
+def init(pname, mname, path=None):
+    mod = importer(pname, mname, path)
+    if "init" in dir(mod):
+        mod.init()
+
+
+def print_exc(ex):
+    traceback.print_exception(type(ex), ex, ex.__traceback__)
+
+
+def setcompleter(optionlist):
+    completer = Completer(optionlist)
+    readline.set_completer(completer.complete)
+    readline.parse_and_bind("tab: complete")
+    atexit.register(lambda: readline.set_completer(None))
 
 
 def wrap(func):
@@ -70,10 +134,9 @@ def wrap(func):
 
 
 def main():
-    boot(NAME)
-    scan(cmds)
-    scan(irc)
-    scan(rss)
+    parse(" ".join(sys.argv[1:]))
+    banner(Cfg)
+    scandir("mod", importer)
     bot = irc.init()
     print(printable(bot.cfg, "nick,channel,server,port,sasl"))
     rss.init()

@@ -11,17 +11,19 @@ import queue
 import sys
 import threading
 import time
+import traceback
 
 
 from .object import Class, Default, Object, register, update
 from .thread import launch
-from .util import elapsed
+from .utils import elapsed
 
 
 def __dir__():
     return (
             'Bus',
             'Callback',
+            'Cfg',
             'Command',
             'Parsed',
             'Event',

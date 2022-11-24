@@ -12,7 +12,7 @@ import time
 from op.handler import Bus, Command
 from op.object import Class, Object, find, fntime, save, update
 from op.thread import name
-from op.util import elapsed
+from op.utils import elapsed
 
 
 starttime = time.time()

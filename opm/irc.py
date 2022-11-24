@@ -18,13 +18,13 @@ import threading
 import _thread
 
 
-from .object import Class, Default, Object
-from .object import keys, last, printable
-from .object import edit, fntime, find, save, update
-from .object import locked, register
-from .handler import Command, Event, Handler
-from .thread import launch
-from .util import elapsed
+from op.object import Class, Default, Object
+from op.object import keys, last, printable
+from op.object import edit, fntime, find, save, update
+from op.object import locked, register
+from op.handler import Command, Event, Handler
+from op.thread import launch
+from op.utils import elapsed
 
 
 def __dir__():
