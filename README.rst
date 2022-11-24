@@ -3,6 +3,7 @@ README
 
 **NAME**
 
+|
 | ``op`` - object programming
 |
 
@@ -25,6 +26,7 @@ reading type from the object.
 
 **INSTALL**
 
+|
 | ``pip3 install op --upgrade --force-reinstall``
 |
 
@@ -65,10 +67,12 @@ great for giving objects peristence by having their state stored in files::
 
 **AUTHOR**
 
+|
 | Bart Thate - operbot100@gmail.com
 |
 
 **COPYRIGHT**
 
+|
 | ``op`` is placed in the Public Domain. No Copyright, No License.
 |

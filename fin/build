@@ -5,22 +5,12 @@
 "build"
 
 
-## import
-
-
 import os
 
 
-## utility
-
-
 def popen(txt):
-    "run command"
     for line in os.popen(txt).readlines():
         print(line.strip())
-
-
-## runtime
 
 
 popen("python3 setup.py sdist")

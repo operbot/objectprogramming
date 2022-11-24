@@ -11,11 +11,13 @@ NAME = "ops"
 
 import importlib
 import os
+import readline
+import sys
+import termios
 import time
 
 
-from op import Event, Handler, Wd, launch, scan, scandir
-from op.run import banner, wrap
+from op import Command, Event, Handler, Wd, launch, printable, scan, scandir
 
 
 from opm import cmds
@@ -50,6 +52,16 @@ class Shell(Handler):
         launch(self.loop)
 
 
+def banner(cfg):
+    print(
+          "%s started at %s %s" % (
+                                   NAME.upper(),
+                                   time.ctime(time.time()).replace("  ", " "),
+                                   printable(cfg, "debug,verbose")
+                                  )
+         )
+
+
 def importer(packagename, modulename):
     name = "%s.%s" % (packagename, modulename)
     try:
@@ -57,6 +69,25 @@ def importer(packagename, modulename):
         scan(mod)
     except ModuleNotFoundError:
         pass
+
+
+def wrap(func):
+    fds = sys.stdin.fileno()
+    gotterm = True
+    try:
+        old = termios.tcgetattr(fds)
+    except termios.error:
+        gotterm = False
+    readline.redisplay()
+    try:
+        func()
+    except (EOFError, KeyboardInterrupt):
+        print("")
+    finally:
+        if gotterm:
+            termios.tcsetattr(fds, termios.TCSADRAIN, old)
+        for evt in Command.errors:
+             print_exc(evt.__exc__)
 
 
 cli = CLI()
