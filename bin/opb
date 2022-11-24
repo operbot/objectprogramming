@@ -77,6 +77,13 @@ class Completer(rlcompleter.Completer):
             return None
 
 
+def setcompleter(optionlist):
+    completer = Completer(optionlist)
+    readline.set_completer(completer.complete)
+    readline.parse_and_bind("tab: complete")
+    atexit.register(lambda: readline.set_completer(None))
+
+
 def banner(cfg):
     print(
           "%s started at %s %s" % (
@@ -105,13 +112,6 @@ def init(pname, mname, path=None):
 
 def print_exc(ex):
     traceback.print_exception(type(ex), ex, ex.__traceback__)
-
-
-def setcompleter(optionlist):
-    completer = Completer(optionlist)
-    readline.set_completer(completer.complete)
-    readline.parse_and_bind("tab: complete")
-    atexit.register(lambda: readline.set_completer(None))
 
 
 def wrap(func):
@@ -146,3 +146,9 @@ def main():
 
 
 wrap(main)
+
+def setcompleter(optionlist):
+    completer = Completer(optionlist)
+    readline.set_completer(completer.complete)
+    readline.parse_and_bind("tab: complete")
+    atexit.register(lambda: readline.set_completer(None))

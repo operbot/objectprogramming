@@ -37,4 +37,4 @@ def loop(path, txt):
 
 
 if __name__ == "__main__":
-    loop(os.getcwd(), "pylint --recursive y *")
+    loop(os.getcwd(), "pylint *")
