@@ -1,5 +1,5 @@
 # This file is placed in the Public Domain.
-# pylint: disable=R0903,C0103,C0114,C0115,C0116,W0622,C0209
+# pylint: disable=E0012,R0903,C0103,C0114,C0115,C0116,W0622,C0209
 
 
 "find"
@@ -8,9 +8,10 @@
 import time
 
 
-from op.object import Wd, find, fntime, keys, printable
+from op.object import Wd, fntime, keys, printable
 from op.utils import elapsed
 
+from op.object import find as fnd
 
 def find(event):
     if not event.args:
@@ -22,7 +23,7 @@ def find(event):
         return
     otype = event.args[0]
     nmr = 0
-    for obj in find(otype, event.gets):
+    for obj in fnd(otype, event.gets):
         txt = "%s %s %s" % (
                             str(nmr),
                             printable(obj, event.sets.keys or keys(obj), event.toskip),

@@ -1,5 +1,5 @@
 # This file is placed in the Public Domain.
-# pylint: disable=R0903,C0209,C0115,C0116,W0212
+# pylint: disable=R0903,C0115,C0116,W0212
 
 
 "mailbox"

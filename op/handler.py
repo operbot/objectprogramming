@@ -11,12 +11,11 @@ import queue
 import sys
 import threading
 import time
-import traceback
 
 
-from .object import Class, Default, Object, register, update
-from .thread import launch
-from .utils import elapsed
+from op.object import Class, Default, Object, register, update
+from op.thread import launch
+from op.utils import elapsed
 
 
 def __dir__():
@@ -116,8 +115,8 @@ class Command(Object):
             try:
                 func(evt)
             except Exception as ex:
-                tb = sys.exc_info()[2]
-                evt.__exc__ = ex.with_traceback(tb)
+                tbk = sys.exc_info()[2]
+                evt.__exc__ = ex.with_traceback(tbk)
                 Command.errors.append(evt)
                 evt.ready()
                 return None
@@ -245,7 +244,7 @@ class Event(Parsed):
         self.createtime = time.time()
         self.result = []
         self.type = "event"
-        
+
     def bot(self):
         return Bus.byorig(self.orig)
 

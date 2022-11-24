@@ -8,8 +8,6 @@
 
 NAME = "ops"
 
-## import
-
 
 import importlib
 import os
@@ -23,9 +21,6 @@ from op.run import banner, wrap
 from opm import cmds
 
 
-## define
-
-
 Wd.workdir = os.path.expanduser("~/.%s" % NAME)
 
 
@@ -36,9 +31,6 @@ class CLI(Handler):
 
     def raw(self, txt):
         print(txt)
-
-
-## class
 
 
 class Shell(Handler):
@@ -58,9 +50,6 @@ class Shell(Handler):
         launch(self.loop)
 
 
-## utility
-
-
 def importer(packagename, modulename):
     name = "%s.%s" % (packagename, modulename)
     try:
@@ -68,9 +57,6 @@ def importer(packagename, modulename):
         scan(mod)
     except ModuleNotFoundError:
         pass
-
-
-## runtime
 
 
 cli = CLI()

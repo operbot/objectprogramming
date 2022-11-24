@@ -8,8 +8,6 @@
 
 NAME = "opd"
 
-## import
-
 
 import os
 import sys
@@ -23,9 +21,6 @@ from opm import cmds, irc, rss
 from opm.irc import Config
 
 
-## define
-
-
 Config.nick = "opd"
 Config.channel = "#opd"
 Config.realname = "object programming daemon"
@@ -33,9 +28,6 @@ Config.username = "opd"
 
 
 Wd.workdir = os.path.expanduser("~/.op")
-
-
-## runtime
 
 
 scan(cmds)

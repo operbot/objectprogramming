@@ -21,7 +21,6 @@ setup(
     long_description=read(),
     license="Public Domain",
     packages=["op","opm"],
-    py_modules=["opsys"],
     scripts=["bin/opb", "bin/opc", "bin/opd", "bin/opf", "bin/ops"],
     classifiers=[
         "Development Status :: 4 - Beta",

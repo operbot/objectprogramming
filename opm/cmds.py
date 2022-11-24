@@ -1,5 +1,5 @@
 # This file is placed in the Public Domain.
-# pylint: disable=E1101,R0903,C0209,C0115,C0116
+# pylint: disable=E1101,R0903,C0115,C0116
 
 
 "commands"

@@ -6,9 +6,6 @@
 "command"
 
 
-## import
-
-
 import importlib
 import os
 import sys
@@ -19,22 +16,13 @@ from op import Event, Handler, Wd, scan, scandir
 from opm import cmds, irc
 
 
-## define
-
-
 Wd.workdir = os.path.expanduser("~/.op")
-
-
-## class
 
 
 class CLI(Handler):
 
     def raw(self, txt):
         print(txt)
-
-
-## utility
 
 
 def importer(pname, mname):
@@ -44,9 +32,6 @@ def importer(pname, mname):
         scan(mod)
     except ModuleNotFoundError:
         pass
-
-
-## runtime
 
 
 cli = CLI()

@@ -5,23 +5,14 @@
 "timer"
 
 
-## import
-
-
 import unittest
 
 
 from op import Timer
 
 
-## define
-
-
 def test():
     pass
-
-
-3# class
 
 
 class TestTimer(unittest.TestCase):

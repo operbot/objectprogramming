@@ -7,6 +7,7 @@
 
 
 import importlib
+import readline
 import rlcompleter
 import sys
 import termios
@@ -16,6 +17,9 @@ import traceback
 
 from op.object import printable
 from op.handler import Command, Event, Handler, scan
+
+
+NAME = "opb"
 
 
 class Console(Handler):

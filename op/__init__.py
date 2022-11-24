@@ -63,18 +63,14 @@ import uuid
 from stat import ST_UID, ST_MODE, S_IMODE
 
 
-from .handler import *
-from .object import *
-from .thread import *
-from .utils import *
+from op.handler import *
+from op.object import *
+from op.thread import *
+from op.utils import *
 
 
 def __dir__():
     return (
-            'handler',
-            'object',
-            'thread',
-            'utils',
             'Cfg',
             'Class',
             'Default',

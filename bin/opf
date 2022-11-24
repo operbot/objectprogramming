@@ -9,9 +9,6 @@
 NAME = "opf"
 
 
-## import
-
-
 import os
 import readline
 import sys
@@ -21,13 +18,7 @@ import time
 from op import Wd, elapsed, fntime, find, keys, printable
 
 
-## define
-
-
 Wd.workdir = os.path.expanduser("~/.op")
-
-
-## utility
 
 
 def fnd(args):
@@ -59,9 +50,6 @@ def fnd(args):
         print(txt)
     if not nmr:
         print("no result")
-
-
-## runtime
 
 
 fnd(sys.argv[1:])
