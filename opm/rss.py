@@ -295,7 +295,7 @@ def rss(event):
     if "http" not in url:
         event.reply("i need an url")
         return
-    res = list(last("rss", {"rss": url}))
+    res = last("rss", {"rss": url})
     if res:
         event.reply("already got %s" % url)
         return

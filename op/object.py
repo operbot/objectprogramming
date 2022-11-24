@@ -398,8 +398,10 @@ def find(otp, selector=None, index=None, timed=None, deleted=True):
     return sorted(result, key=lambda x: fntime(x.__fnm__))
 
 
-def last(obj):
-    ooo = Db.last(kind(obj))
+def last(obj, selector=None):
+    if selector == None:
+        selector = {}
+    ooo = Db.last(kind(obj), selector)
     if ooo:
         update(obj, ooo)
         obj.__fnm__ = ooo.__fnm__

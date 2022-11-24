@@ -6,9 +6,6 @@
 "daemon"
 
 
-NAME = "opd"
-SILENT = True
-
 import os
 import sys
 
@@ -26,7 +23,7 @@ Config.realname = "object programming daemon"
 Config.username = "opd"
 
 
-Wd.workdir = os.path.expanduser("~/.op")
+Wd.workdir = os.path.expanduser("~/.objectprogramming")
 
 
 def daemon():
@@ -35,21 +32,22 @@ def daemon():
         os._exit(0)
     os.setsid()
     os.umask(0)
-    if not SILENT:
-        sis = open("/dev/null", 'r')
+    sis = open("/dev/null", 'r')
+    os.dup2(sis.fileno(), sys.stdin.fileno())
+    if SILENT:
         sos = open("/dev/null", 'a+')
         ses = open("/dev/null", 'a+')
-        os.dup2(sis.fileno(), sys.stdin.fileno())
         os.dup2(sos.fileno(), sys.stdout.fileno())
         os.dup2(ses.fileno(), sys.stderr.fileno())
 
 
 scan(cmds)
 scan(irc)
+scan(rss)
 
 
 def main():
-    sys.argv[0] = NAME
+    sys.argv[0] = "opd"
     daemon()
     irc.init()
     rss.init()
