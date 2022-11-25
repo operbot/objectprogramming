@@ -399,7 +399,7 @@ def find(otp, selector=None, index=None, timed=None, deleted=True):
 
 
 def last(obj, selector=None):
-    if selector == None:
+    if selector is None:
         selector = {}
     ooo = Db.last(kind(obj), selector)
     if ooo:

@@ -6,9 +6,6 @@
 "object programming shell"
 
 
-NAME = "ops"
-
-
 import importlib
 import os
 import readline
@@ -17,16 +14,16 @@ import termios
 import time
 
 
+sys.path,insert(0, os.getcwd())
+
+
 from op import Command, Event, Handler, Wd, launch, printable, scan, scandir
 
 
 from opm import cmds
 
 
-Wd.workdir = os.path.expanduser("~/.%s" % NAME)
-
-
-starttime = time.time()
+Wd.workdir = os.path.expanduser("~/.objectprogramming")
 
 
 class CLI(Handler):

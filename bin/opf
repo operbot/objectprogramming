@@ -18,7 +18,7 @@ import time
 from op import Wd, elapsed, fntime, find, keys, printable
 
 
-Wd.workdir = os.path.expanduser("~/.op")
+Wd.workdir = os.path.expanduser("~/.objectprogramming")
 
 
 def fnd(args):
