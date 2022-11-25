@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 # This file is placed in the Public Domain.
-# pylint: disable=C0115,C0116,C0209
+# pylint: disable=C0115,C0116,C0411,C0413
 
 
 "object programming bot"
 
 
 import atexit
+import importlib
 import os
 import readline
 import rlcompleter
-import signal
 import sys
 import termios
 import time
+import traceback
 
 
 sys.path.insert(0, os.getcwd())
@@ -39,22 +40,6 @@ scan(irc)
 scan(rss)
 
 
-"runtime"
-
-
-import importlib
-import readline
-import rlcompleter
-import sys
-import termios
-import time
-import traceback
-
-
-from op.object import printable
-from op.handler import Command, Event, Handler, scan
-
-
 class Console(Handler):
 
 
@@ -76,12 +61,16 @@ class Completer(rlcompleter.Completer):
 
     def __init__(self, options):
         super().__init__()
+        self.matches = []
         self.options = options
 
     def complete(self, text, state):
         if state == 0:
             if text:
-                self.matches = [s for s in self.options if s and s.startswith(text)]
+                self.matches = [
+                                s for s in self.options
+                                if s and s.startswith(text)
+                               ]
             else:
                 self.matches = self.options[:]
         try:
@@ -106,7 +95,9 @@ def banner(cfg):
          )
 
 
-def importer(pname, mname, path):
+def importer(pname, mname, path=None):
+    if not path:
+        path = pname
     mod = None
     spec = importlib.util.spec_from_file_location(mname, path)
     if spec:
@@ -142,7 +133,7 @@ def wrap(func):
         if gotterm:
             termios.tcsetattr(fds, termios.TCSADRAIN, old)
         for evt in Command.errors:
-             print_exc(evt.__exc__)
+            print_exc(evt.__exc__)
 
 
 def main():
