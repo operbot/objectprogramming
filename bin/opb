@@ -22,22 +22,9 @@ sys.path.insert(0, os.getcwd())
 
 from op import Command, Cfg, Event, Handler, Wd
 from op import parse, printable, scan, scandir, wait
-from opm import cmds, irc, rss
-from opm.irc import Config
 
 
 Wd.workdir = os.path.expanduser("~/.objectprogramming")
-
-
-Config.nick = "opb"
-Config.channel = "#opb"
-Config.realname = "object programming bot"
-Config.username = "opb"
-
-
-scan(cmds)
-scan(irc)
-scan(rss)
 
 
 class Console(Handler):
@@ -140,9 +127,7 @@ def main():
     parse(" ".join(sys.argv[1:]))
     banner(Cfg)
     scandir("mod", importer)
-    bot = irc.init()
-    print(printable(bot.cfg, "nick,channel,server,port,sasl"))
-    rss.init()
+    scandir("mod", init)
     csl = Console()
     csl.start()
     wait()

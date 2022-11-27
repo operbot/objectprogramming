@@ -43,8 +43,8 @@ def __dir__():
 __all__ = __dir__()
 
 
-NAME = "operbot"
-REALNAME = "program your own commands"
+NAME = "objectprogramming"
+REALNAME = "functional programming with objects"
 
 
 saylock = _thread.allocate_lock()
