@@ -1,19 +1,12 @@
 # This file is placed in the Public Domain.
-# pylint: disable=R,C,W,C0302
-
+# pylint: disable=C0116
 
 "utility"
 
 
 import getpass
 import os
-import pwd
-import sys
 import time
-import types
-
-
-from stat import ST_UID, ST_MODE, S_IMODE
 
 
 def __dir__():
@@ -25,7 +18,7 @@ def __dir__():
             'touch',
             'user',
             'wait'
-           ) 
+           )
 
 
 __all__ = __dir__()
@@ -89,13 +82,13 @@ def spl(txt):
 
 
 def touch(fname):
-    fd = os.open(fname, os.O_WRONLY | os.O_CREAT)
-    os.close(fd)
+    fds = os.open(fname, os.O_WRONLY | os.O_CREAT)
+    os.close(fds)
 
 
 def user():
     try:
-        return getpass.getuser() 
+        return getpass.getuser()
     except ImportError:
         return ""
 

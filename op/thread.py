@@ -1,11 +1,10 @@
 # This file is placed in the Public Domain.
-# pylint: disable=R,C,W,C0302
+# pylint: disable=C0112,C0115,C0116,R0902
 
 
 "thread"
 
 
-import os
 import queue
 import threading
 import time
@@ -19,7 +18,7 @@ def __dir__():
             'Repeater',
             'launch',
             'name'
-           ) 
+           )
 
 
 __all__ = __dir__()
