@@ -10,9 +10,9 @@ import os
 import time
 
 
-from op.object import Class, Object
-from op.object import find, fntime, printable, save, update
-from op.utils import elapsed
+from op.obj import Class, Object
+from op.obj import find, fntime, printable, save, update
+from op.thr import elapsed
 
 
 def __dir__():

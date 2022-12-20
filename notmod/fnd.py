@@ -8,10 +8,10 @@
 import time
 
 
-from op.object import Wd, fntime, keys, printable
-from op.utils import elapsed
+from op.obj import Wd, fntime, keys, printable
+from op.thr import elapsed
 
-from op.object import find as fnd
+from op.obj import find as fnd
 
 def find(event):
     if not event.args:

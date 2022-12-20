@@ -3,7 +3,7 @@
 # pylint: disable=C0116,W0611,C0413,C0209
 
 
-"object programming"
+"object programming find"
 
 
 NAME = "opf"
@@ -18,7 +18,7 @@ import time
 from op import Wd, elapsed, fntime, find, keys, printable
 
 
-Wd.workdir = os.path.expanduser("~/.objectprogramming")
+Wd.workdir = os.path.expanduser("~/.op")
 
 
 def fnd(args):
