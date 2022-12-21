@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # This file is placed in the Public Domain.
-# pylint: disable=C0116,C0413,W0212,C0301,W0613
+# pylint: disable=C0115,C0116,C0413,W0212,C0301,W0613,E0611,E0401
 
 
 "object programming (op)"
@@ -19,6 +19,7 @@ import os
 import readline
 import rlcompleter
 import sys
+import shutil
 import time
 import termios
 import traceback
@@ -29,7 +30,7 @@ sys.path.insert(0, os.getcwd())
 
 from op.evt import Event
 from op.hdl import Command, Handler
-from op.obj import Wd, keys, last, printable
+from op.obj import Wd, cdir, edit, keys, last, printable, write
 from op.run import Cfg, boot, command, scandir, scanner
 from op.thr import launch
 
@@ -133,13 +134,6 @@ def importer(mname, path):
 
 def print_exc(ex):
     traceback.print_exception(type(ex), ex, ex.__traceback__)
-
-
-def setcompleter(optionlist):
-    completer = Completer(optionlist)
-    readline.set_completer(completer.complete)
-    readline.parse_and_bind("tab: complete")
-    atexit.register(lambda: readline.set_completer(None))
 
 
 def setcompleter(optionlist):
@@ -255,7 +249,7 @@ Command.add(dis)
 Command.add(ena)
 Command.add(pop)
 Command.add(ver)
-    
+
 
 ## runtime
 
@@ -272,7 +266,6 @@ def main():
         print("%s started at %s %s" % (Cfg.name.upper(), date, printable(Cfg, plain=True)))
         cli = Console()
         cli.start()
-     
+    return None
 
 wrap(main)
-    

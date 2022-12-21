@@ -13,11 +13,11 @@ def read():
 
 setup(
     name="objectprogramming",
-    version="103",
+    version="104",
     author="Bart Thate",
     author_email="operbot100@gmail.com",
     url="http://github.com/operbot/objectprogramming",
-    description="functional programming with objects",
+    description="Object Programming (op) - functional programming with objects",
     long_description=read(),
     long_description_content_type="text/x-rst",
     license="Public Domain",
