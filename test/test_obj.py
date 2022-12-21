@@ -157,7 +157,7 @@ class TestObject(unittest.TestCase):
         self.assertTrue(Object().__module__, "op")
 
     def test_kind(self):
-        self.assertEqual(kind(Object()), "op.object.Object")
+        self.assertEqual(kind(Object()), "op.obj.Object")
 
     def test_repr(self):
         self.assertTrue(update(Object(),
