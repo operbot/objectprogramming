@@ -217,7 +217,9 @@ def ena(event):
         event.reply("i won't enable myself")
         return
     path = os.path.join(Wd.get(), "notmod", name) + ".py"
-    cdir(os.path.dirname(path) + os.sep)
+    if not os.path.exists(path):
+        event.reply("missing %s" % name)
+        return
     dest = os.path.join(Wd.get(), "mod", name) + ".py"
     cdir(os.path.dirname(dest) + os.sep)
     shutil.move(path, dest)
@@ -234,27 +236,20 @@ def pop(event):
         return
     destdir = os.path.join(Wd.get(), "notmod", "")
     cdir(destdir)
-    for name in os.listdir("mod"):
-        if not name.endswith(".py"):
-            continue
-        path = os.path.join("mod", name)
-        dest = os.path.join(destdir, name)
-        print("%s -> %s" % (path, dest))
-        shutil.copy(path, dest)
-    for name in os.listdir("notmod"):
-        if not name.endswith(".py"):
-            continue
-        path = os.path.join("notmod", name)
-        dest = os.path.join(destdir, name)
-        print("%s -> %s" % (path, dest))
-        shutil.copy(path, dest)
+    dirs = ["mod", "notmod"]
+    for dname in dirs:
+        for name in os.listdir(dname):
+            if not name.endswith(".py"):
+                continue
+            path = os.path.join(dname, name)
+            dest = os.path.join(destdir, name)
+            event.reply("%s -> %s" % (path, dest))
+            shutil.copy(path, dest)
     event.ok()
 
 
 def ver(event):
     event.reply("Object Programming (op) version %s" % __version__)
-
-
 
 
 ## runtime
@@ -276,7 +271,7 @@ def main():
     if Cfg.daemon:
         daemon()
         Cfg.wait = True
-    print(scandir(Wd.moddir(), initer, "mod"))
+    scandir(Wd.moddir(), initer, "mod")
     if Cfg.console:
         setcompleter(Command.cmd)
         date = time.ctime(time.time()).replace("  ", " ")
