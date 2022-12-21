@@ -1,0 +1,278 @@
+#!/usr/bin/env python3
+# This file is placed in the Public Domain.
+# pylint: disable=C0116,C0413,W0212,C0301,W0613
+
+
+"object programming (op)"
+
+
+__version__ = "110"
+
+
+## imports
+
+
+import atexit
+import importlib
+import importlib.util
+import os
+import readline
+import rlcompleter
+import sys
+import time
+import termios
+import traceback
+
+
+sys.path.insert(0, os.getcwd())
+
+
+from op.evt import Event
+from op.hdl import Command, Handler
+from op.obj import Wd, keys, last, printable
+from op.run import Cfg, boot, command, scandir, scanner
+from op.thr import launch
+
+
+## defines
+
+
+Cfg.name = "op"
+Wd.workdir = os.path.expanduser("~/.op")
+
+
+## classes
+
+
+class CLI(Handler):
+
+    @staticmethod
+    def announce(txt):
+        pass
+
+    @staticmethod
+    def raw(txt):
+        print(txt)
+        sys.stdout.flush()
+
+
+
+class Console(Handler):
+
+    @staticmethod
+    def announce(txt):
+        pass
+
+    @staticmethod
+    def handle(event):
+        Command.handle(event)
+        event.wait()
+
+    def poll(self):
+        event = Event()
+        event.txt = input("> ")
+        event.orig = repr(self)
+        return event
+
+    @staticmethod
+    def raw(txt):
+        print(txt)
+        sys.stdout.flush()
+
+
+class Completer(rlcompleter.Completer):
+
+    def __init__(self, options):
+        rlcompleter.Completer.__init__(self)
+        self.matches = []
+        self.options = options
+
+    def complete(self, text, state):
+        if state == 0:
+            if text:
+                self.matches = [
+                                s for s in self.options
+                                if s and s.startswith(text)
+                               ]
+            else:
+                self.matches = self.options[:]
+        try:
+            return self.matches[state]
+        except IndexError:
+            return None
+
+
+## utilities
+
+
+def daemon():
+    pid = os.fork()
+    if pid != 0:
+        os._exit(0)
+    os.setsid()
+    os.umask(0)
+    sis = open("/dev/null", 'r')
+    os.dup2(sis.fileno(), sys.stdin.fileno())
+    if not Cfg.verbose:
+        sos = open("/dev/null", 'a+')
+        ses = open("/dev/null", 'a+')
+        os.dup2(sos.fileno(), sys.stdout.fileno())
+        os.dup2(ses.fileno(), sys.stderr.fileno())
+
+
+def importer(mname, path):
+    spec = importlib.util.find_spec(mname)
+    if spec:
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        if "init" in dir(mod):
+            launch(mod.init)
+        return mod
+    return None
+
+
+def print_exc(ex):
+    traceback.print_exception(type(ex), ex, ex.__traceback__)
+
+
+def setcompleter(optionlist):
+    completer = Completer(optionlist)
+    readline.set_completer(completer.complete)
+    readline.parse_and_bind("tab: complete")
+    atexit.register(lambda: readline.set_completer(None))
+
+
+def setcompleter(optionlist):
+    completer = Completer(optionlist)
+    readline.set_completer(completer.complete)
+    readline.parse_and_bind("tab: complete")
+    atexit.register(lambda: readline.set_completer(None))
+
+
+def wrap(func):
+    fds = sys.stdin.fileno()
+    gotterm = True
+    try:
+        old = termios.tcgetattr(fds)
+    except termios.error:
+        gotterm = False
+    try:
+        func()
+    except (EOFError, KeyboardInterrupt):
+        print("")
+    finally:
+        if gotterm:
+            termios.tcsetattr(fds, termios.TCSADRAIN, old)
+        for evt in Command.errors:
+            print_exc(evt.__exc__)
+
+
+## commands
+
+
+def cfg(event):
+    last(Cfg)
+    if not event.sets:
+        event.reply(printable(
+                              Cfg,
+                              keys(Cfg),
+                             )
+                   )
+    else:
+        edit(Cfg, event.sets)
+        write(Cfg)
+        event.done()
+
+
+def cmd(event):
+    event.reply(",".join(Command.cmd))
+
+
+def dis(event):
+    if not event.args:
+        event.reply("disable <modname>")
+        return
+    name = event.args[0]
+    if name == "disable":
+        event.reply("i won't disable myself")
+        return
+    path = os.path.join(Wd.get(), "mod", name) + ".py"
+    if not os.path.exists(path):
+        event.reply("can't find %s module to disable" % name)
+        return
+    dest = os.path.join(Wd.get(), "notmod", name) + ".py"
+    cdir(os.path.dirname(dest) + os.sep)
+    shutil.move(path, dest)
+    event.ok()
+
+
+def ena(event):
+    if not event.args:
+        event.reply("enable <modname>")
+        return
+    name = event.args[0]
+    if name == "enable":
+        event.reply("i won't enable myself")
+        return
+    path = os.path.join(Wd.get(), "notmod", name) + ".py"
+    cdir(os.path.dirname(path) + os.sep)
+    dest = os.path.join(Wd.get(), "mod", name) + ".py"
+    cdir(os.path.dirname(dest) + os.sep)
+    shutil.move(path, dest)
+    event.ok()
+
+
+def pop(event):
+    if not os.path.exists("mod"):
+        event.reply("no mod dir to populate from")
+        return
+    destdir = os.path.join(Wd.get(), "notmod", "")
+    cdir(destdir)
+    for name in os.listdir("mod"):
+        if not name.endswith(".py"):
+            continue
+        path = os.path.join("mod", name)
+        dest = os.path.join(destdir, name)
+        print("%s -> %s" % (path, dest))
+        shutil.copy(path, dest)
+    for name in os.listdir("notmod"):
+        if not name.endswith(".py"):
+            continue
+        path = os.path.join("notmod", name)
+        dest = os.path.join(destdir, name)
+        print("%s -> %s" % (path, dest))
+        shutil.copy(path, dest)
+    event.ok()
+
+
+def ver(event):
+    event.reply("Object Programming (op) version %s" % __version__)
+
+
+Command.add(cmd)
+Command.add(cfg)
+Command.add(dis)
+Command.add(ena)
+Command.add(pop)
+Command.add(ver)
+    
+
+## runtime
+
+
+def main():
+    boot()
+    scandir(Wd.moddir(), importer, "mod")
+    setcompleter(Command.cmd)
+    if Cfg.prs.txt:
+        cli = CLI()
+        return command(cli, Cfg.prs.otxt)
+    if Cfg.console:
+        date = time.ctime(time.time()).replace("  ", " ")
+        print("%s started at %s %s" % (Cfg.name.upper(), date, printable(Cfg, plain=True)))
+        cli = Console()
+        cli.start()
+     
+
+wrap(main)
+    
