@@ -90,12 +90,15 @@ def scanner(pkg, importer, mods=None):
 
 
 def scandir(path, importer, pname, mods=None):
+    res = []
     for modname in listmod(path):
         if mods and not include(modname, spl(mods)):
             continue
         mname = "%s.%s" % (pname, modname)
         mod = importer(mname, path)
+        res.append(mod)
         scan(mod)
+    return res
 
 
 def wait():

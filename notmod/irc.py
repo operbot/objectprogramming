@@ -44,7 +44,7 @@ __all__ = __dir__()
 
 
 NAME = "objectprogramming"
-REALNAME = "functional programming with objects"
+REALNAME = "Object Programming (op) - functional programming with objects."
 
 
 saylock = _thread.allocate_lock()

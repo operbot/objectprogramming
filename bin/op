@@ -38,7 +38,7 @@ from op.thr import launch
 ## defines
 
 
-Cfg.name = "op"
+Cfg.name = "Object Programming (op)"
 Wd.workdir = os.path.expanduser("~/.op")
 
 
@@ -121,15 +121,22 @@ def daemon():
         os.dup2(ses.fileno(), sys.stderr.fileno())
 
 
-def importer(mname, path):
-    spec = importlib.util.find_spec(mname)
+def importer(mname, path=None):
+    if path is None:
+        spec = importlib.util.find_spec(mname)
+    else:
+        spec = importlib.util.spec_from_file_location(path, mname)
     if spec:
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
-        if "init" in dir(mod):
-            launch(mod.init)
         return mod
     return None
+
+
+def initer(mname, path=None):
+    mod = importer(mname, path)
+    if mod and "init" in dir(mod):
+        mod.init()
 
 
 def print_exc(ex):
@@ -170,6 +177,7 @@ def cfg(event):
         event.reply(printable(
                               Cfg,
                               keys(Cfg),
+                              skip="name,password,prs",
                              )
                    )
     else:
@@ -216,6 +224,10 @@ def ena(event):
     event.ok()
 
 
+def mod(event):
+    event.reply(",".join([x[:-3] for x in os.listdir(Wd.moddir())]))
+
+
 def pop(event):
     if not os.path.exists("mod"):
         event.reply("no mod dir to populate from")
@@ -243,12 +255,6 @@ def ver(event):
     event.reply("Object Programming (op) version %s" % __version__)
 
 
-Command.add(cmd)
-Command.add(cfg)
-Command.add(dis)
-Command.add(ena)
-Command.add(pop)
-Command.add(ver)
 
 
 ## runtime
@@ -256,16 +262,30 @@ Command.add(ver)
 
 def main():
     boot()
+    Command.add(cmd)
+    Command.add(cfg)
+    Command.add(dis)
+    Command.add(ena)
+    Command.add(mod)
+    Command.add(pop)
+    Command.add(ver)
     scandir(Wd.moddir(), importer, "mod")
-    setcompleter(Command.cmd)
     if Cfg.prs.txt:
         cli = CLI()
         return command(cli, Cfg.prs.otxt)
+    if Cfg.daemon:
+        daemon()
+        Cfg.wait = True
+    print(scandir(Wd.moddir(), initer, "mod"))
     if Cfg.console:
+        setcompleter(Command.cmd)
         date = time.ctime(time.time()).replace("  ", " ")
-        print("%s started at %s %s" % (Cfg.name.upper(), date, printable(Cfg, plain=True)))
+        print("%s started at %s %s" % (Cfg.name.upper(), date, printable(Cfg, skip="name", plain=True)))
         cli = Console()
         cli.start()
-    return None
+        Cfg.wait = True
+    if Cfg.wait:
+        wait()
+
 
 wrap(main)
