@@ -31,14 +31,14 @@ sys.path.insert(0, os.getcwd())
 from op.evt import Event
 from op.hdl import Command, Handler
 from op.obj import Wd, cdir, edit, keys, last, printable, write
-from op.run import Cfg, boot, command, scandir, scanner
+from op.run import Cfg, boot, command, scan, scandir
 from op.thr import launch
 
 
 ## defines
 
 
-Cfg.name = "Object Programming (op)"
+Cfg.name = "op"
 Wd.workdir = os.path.expanduser("~/.op")
 
 
@@ -125,7 +125,7 @@ def importer(mname, path=None):
     if path is None:
         spec = importlib.util.find_spec(mname)
     else:
-        spec = importlib.util.spec_from_file_location(path, mname)
+        spec = importlib.util.spec_from_file_location(mname, path)
     if spec:
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
@@ -136,7 +136,14 @@ def importer(mname, path=None):
 def initer(mname, path=None):
     mod = importer(mname, path)
     if mod and "init" in dir(mod):
-        mod.init()
+        thr = launch(mod.init)
+        thr.join()
+    scan(mod)
+
+
+def scanner(mname, path=None):
+    mod = importer(mname, path)
+    scan(mod)
 
 
 def print_exc(ex):
@@ -198,12 +205,14 @@ def dis(event):
     if name == "disable":
         event.reply("i won't disable myself")
         return
-    path = os.path.join(Wd.get(), "mod", name) + ".py"
+    name += ".py"
+    path = os.path.join(Wd.moddir(), name)
     if not os.path.exists(path):
-        event.reply("can't find %s module to disable" % name)
+        event.reply("can't find %s to disable" % name)
         return
-    dest = os.path.join(Wd.get(), "notmod", name) + ".py"
-    cdir(os.path.dirname(dest) + os.sep)
+    nmd = os.path.join(Wd.get(), "notmod")
+    cdir(nmd)
+    dest = os.path.join(nmd, name)
     shutil.move(path, dest)
     event.ok()
 
@@ -216,18 +225,18 @@ def ena(event):
     if name == "enable":
         event.reply("i won't enable myself")
         return
-    path = os.path.join(Wd.get(), "notmod", name) + ".py"
+    name += ".py"
+    path = os.path.join(Wd.get(), "notmod", name)
     if not os.path.exists(path):
         event.reply("missing %s" % name)
         return
-    dest = os.path.join(Wd.get(), "mod", name) + ".py"
-    cdir(os.path.dirname(dest) + os.sep)
+    dest = os.path.join(Wd.moddir(), name)
     shutil.move(path, dest)
     event.ok()
 
 
 def mod(event):
-    event.reply(",".join([x[:-3] for x in os.listdir(Wd.moddir())]))
+    event.reply(",".join([x[:-3] for x in os.listdir(Wd.moddir()) if not x.startswith("_")]))
 
 
 def pop(event):
@@ -249,7 +258,7 @@ def pop(event):
 
 
 def ver(event):
-    event.reply("Object Programming (op) version %s" % __version__)
+    event.reply("OP version %s" % __version__)
 
 
 ## runtime
@@ -259,13 +268,13 @@ def main():
     boot()
     Command.add(cmd)
     Command.add(cfg)
-    Command.add(dis)
-    Command.add(ena)
     Command.add(mod)
-    Command.add(pop)
     Command.add(ver)
-    scandir(Wd.moddir(), importer, "mod")
+    scandir(Wd.moddir(), scanner, "mod")
     if Cfg.prs.txt:
+        Command.add(dis)
+        Command.add(ena)
+        Command.add(pop)
         cli = CLI()
         return command(cli, Cfg.prs.otxt)
     if Cfg.daemon:

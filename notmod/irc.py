@@ -31,11 +31,12 @@ def __dir__():
     return (
             'Config',
             'IRC',
-            'cfg',
+            'icfg',
             'dlt',
             'init',
             'met',
             'mre',
+            'opr',
             'pwd'
            )
 
@@ -43,8 +44,8 @@ def __dir__():
 __all__ = __dir__()
 
 
-NAME = "objectprogramming"
-REALNAME = "Object Programming (op) - functional programming with objects."
+NAME = "op"
+REALNAME = "functional programming with objects."
 
 
 saylock = _thread.allocate_lock()
@@ -74,7 +75,7 @@ class Config(Default):
     servermodes = ""
     sleep = 60
     username = "%s" % NAME
-    users = False
+    users = True
 
     def __init__(self):
         super().__init__()
@@ -528,7 +529,7 @@ class IRC(Handler, Output):
         self.connected.clear()
         self.joined.clear()
         Output.start(self)
-        Handler.start(self)
+        launch(Handler.start, self)
         launch(
                self.doconnect,
                self.cfg.server,
@@ -603,7 +604,7 @@ class User(Object):
             update(self, val)
 
 
-def cfg(event):
+def icfg(event):
     config = Config()
     last(config)
     if not event.sets:
@@ -646,6 +647,28 @@ def met(event):
     user.user = event.rest
     user.perms = ["USER"]
     save(user)
+    event.done()
+
+
+def opr(event):
+    if not event.rest:
+        nmr = 0
+        for obj in find("user"):
+            event.reply("%s %s %s %s" % (
+                                         nmr,
+                                         obj.user,
+                                         obj.perms,
+                                         elapsed(time.time() - fntime(obj.__fnm__)))
+                                        )
+            nmr += 1
+        return
+    user = user.match("mod.irc.User", {"user": event.rest})
+    if not user:
+        user = User()
+    user.user = event.rest
+    if "OPER" not in user.perms:
+        user.perms.append("OPER")
+    write(user)
     event.done()
 
 

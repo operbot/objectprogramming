@@ -95,7 +95,8 @@ def scandir(path, importer, pname, mods=None):
         if mods and not include(modname, spl(mods)):
             continue
         mname = "%s.%s" % (pname, modname)
-        mod = importer(mname, path)
+        ppath = os.path.join("%s/%s.py" % (path, modname))
+        mod = importer(mname, ppath)
         res.append(mod)
         scan(mod)
     return res
