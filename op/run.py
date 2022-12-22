@@ -104,9 +104,11 @@ def scandir(path, importer, pname, mods=None):
     return res
 
 
-def wait():
+def wait(func=None):
     while 1:
         time.sleep(1.0)
+        if func:
+            func()
 
 
 ## runtime

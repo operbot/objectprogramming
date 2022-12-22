@@ -5,7 +5,7 @@
 "object programming (op)"
 
 
-from op import evt, hdl, obj, run, thr
+from op import evt, hdl, obj, run, thr, usr, ver
 
 
 from op.evt import *
@@ -13,3 +13,5 @@ from op.hdl import *
 from op.obj import *
 from op.run import *
 from op.thr import *
+from op.usr import *
+from op.ver import *
