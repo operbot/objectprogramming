@@ -551,9 +551,9 @@ class Wd:
 
 
 def cdir(path):
+    path = os.path.abspath(path)
     if not os.path.isdir(path):
-        path += os.sep
-        #path = os.path.dirname(path)
+        path = os.path.dirname(path)
     ppp = pathlib.Path(path)
     ppp.mkdir(parents=True, exist_ok=True)
 
