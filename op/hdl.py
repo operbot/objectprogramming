@@ -73,6 +73,9 @@ class Callback(Object):
         if not func:
             event.ready()
             return
+        if "perm" in dir(func):
+            if not Users.allowed(event.userhost, func.perm):
+                return
         event.__thr__ = launch(func, event)
 
     def dispatch(self, event):

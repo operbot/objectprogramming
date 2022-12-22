@@ -43,6 +43,8 @@ def boot():
         Cfg.verbose = True
     if "w" in prs.opts:
         Cfg.wait = True
+    if "x" in prs.opts:
+        Cfg.exec = True
     update(Cfg.prs, prs)
     update(Cfg, prs.sets)
 
