@@ -14,4 +14,4 @@ from op.obj import *
 from op.run import *
 from op.thr import *
 from op.usr import *
-from op.ver import *
+from op.ver import __version__

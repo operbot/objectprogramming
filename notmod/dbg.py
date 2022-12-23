@@ -4,5 +4,5 @@
 "debug"
 
 
-def debug(event):
+def dbg(event):
     raise Exception("debug!")

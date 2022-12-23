@@ -1,12 +1,15 @@
 # This file is placed in the Public Domain.
-# pylint: disable=C0115,C0116,R0201,C0413,R0902,R0903,W0201,W0613
-# pylint: disable=E1101,R0912,R0915,R0904,W0221
+# pylint: disable=C0115,C0116,E0402,R0903
 
 
 "users"
 
 
-from .obj import Class, Object, find, save
+import time
+
+
+from .obj import Class, Object, find, fntime, match, save, update, write
+from .thr import elapsed
 
 
 def __dir__():
@@ -16,6 +19,10 @@ def __dir__():
             "opr"
            )
 
+
+class NoUser(Exception):
+
+    pass
 
 class Users(Object):
 
@@ -120,7 +127,7 @@ def opr(event):
                                         )
             nmr += 1
         return
-    user = user.match("mod.irc.User", {"user": event.rest})
+    user = match("mod.irc.User", {"user": event.rest})
     if not user:
         user = User()
     user.user = event.rest

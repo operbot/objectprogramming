@@ -8,10 +8,14 @@
 
 ## import
 
+
+import importlib
+import importlib.util
 import os
 import random
 import shutil
 import sys
+import termios
 import time
 import _thread
 
@@ -21,10 +25,7 @@ sys.path.insert(0, os.getcwd())
 
 from op import Command, Event, Handler, Object, Wd
 from op import elapsed, launch, locked, parse, scan
-from op import Cfg, wrap
-
-
-from mod import cmds, fnd, irc, rss
+from op import Cfg, boot, scandir
 
 
 ## define
@@ -105,7 +106,7 @@ def payload(clt):
             evt.txt = cmd + " " + ex
             evt.orig = repr(clt)
             evt.parse()
-            clt.put(evt)
+            clt.handle(evt)
             events.append(evt)
             _nr += 1
     return _nr
@@ -117,8 +118,6 @@ def importer(mname, path):
         mod = importlib.util.module_from_spec(spec)
         print(mod)
         spec.loader.exec_module(mod)
-        if "init" in dir(mod):
-            launch(mod.init)
         return mod
     return None
 
@@ -153,14 +152,13 @@ def wrap(func):
 
 
 def main():
-    if os.path.exists(Cfg.workdir):
-        shutil.rmtree(Cfg.workdir)
-    cfg = parse(" ".join(sys.argv[1:]))
-    if "v" in cfg.opts:
-        Cfg.verbose = True
+    if os.path.exists(Wd.workdir):
+        shutil.rmtree(Wd.workdir)
+    boot()
+    scandir("mod", importer, "mod")
+    scandir("notmod", importer, "mod")
     cli = CLI()
-    cli.start()
-    nrs = cfg.index or 20
+    nrs = Cfg.prs.index or 20
     thrs = []
     starttime = time.time()
     for _nr in range(nrs):
