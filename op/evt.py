@@ -98,7 +98,7 @@ class Event(Parsed):
     def ok(self, txt=None):
         text = "ok " + (txt or "")
         text = text.rstrip()
-        Bus.say(self.orig, self.channel, txt)
+        Bus.say(self.orig, self.channel, text)
 
     def ready(self):
         self.__ready__.set()
