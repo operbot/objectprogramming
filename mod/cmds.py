@@ -10,9 +10,9 @@ from op.hdl import Command
 
 def __dir__():
     return (
-            'cmd',
+            'cmds',
            )
 
 
-def cmd(event):
+def cmds(event):
     event.reply(",".join(sorted(Command.cmd)))

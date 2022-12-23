@@ -529,6 +529,12 @@ class Wd:
         return mdr
 
     @staticmethod
+    def nmdir():
+        mdr = os.path.join(Wd.get(), "notmod")
+        cdir(mdr)
+        return mdr
+
+    @staticmethod
     def set(path):
         Wd.workdir = path
 
