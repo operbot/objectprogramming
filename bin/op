@@ -139,7 +139,7 @@ def importer(mname, path=None):
 def initer(mname, path=None):
     mods = importer(mname, path)
     if mods and "init" in dir(mods):
-        thr = launch(mod.init)
+        thr = launch(mods.init)
         thr.join()
     scan(mods)
 
