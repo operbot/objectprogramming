@@ -558,7 +558,8 @@ class Wd:
 
 def cdir(path):
     path = os.path.abspath(path)
-    if not os.path.isdir(path):
+    fname = path.split(os.sep)[-1]
+    if fname.count(":") == 2:
         path = os.path.dirname(path)
     ppp = pathlib.Path(path)
     ppp.mkdir(parents=True, exist_ok=True)

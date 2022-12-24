@@ -57,7 +57,7 @@ class Users(Object):
         users = list(Users.get_users(origin))
         res = None
         if len(users) > 0:
-            res = users[-1][-1]
+            res = users[-1]
         return res
 
     @staticmethod
