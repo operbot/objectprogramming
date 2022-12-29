@@ -9,9 +9,9 @@ import threading
 import time
 
 
-from op.obj import Object, update
-from op.hdl import Bus
-from op.thr import elapsed, name
+from op.objects import Object, update
+from op.handler import Bus
+from op.threads import elapsed, name
 
 
 def __dir__():

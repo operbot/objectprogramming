@@ -2,16 +2,16 @@
 # pylint: disable=W0622
 
 
-"object programming (op)"
+"object programming"
 
 
-from op import evt, hdl, obj, run, thr, usr, ver
+from op import message, handler, objects, running, threads, usersdb, version
 
 
-from op.evt import *
-from op.hdl import *
-from op.obj import *
-from op.run import *
-from op.thr import *
-from op.usr import *
-from op.ver import __version__
+from op.message import *
+from op.handler import *
+from op.objects import *
+from op.running import *
+from op.threads import *
+from op.usersdb import *
+from op.version import *
