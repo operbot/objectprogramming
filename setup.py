@@ -31,7 +31,7 @@ def uploadlist(dir):
 
 setup(
     name="objectprogramming",
-    version="104",
+    version="105",
     author="Bart Thate",
     author_email="operbot100@gmail.com",
     url="http://github.com/operbot/objectprogramming",
@@ -44,7 +44,6 @@ setup(
     include_package_data=True,
     data_files=[
                 ("op/mod", uploadlist("mod")),
-                ("op/notmod", uploadlist("notmod")),
                 ("share/doc/op", ("README.rst",))
                ],
     classifiers=[
