@@ -3,7 +3,7 @@
 # pylint: disable=C0115,C0116,C0413,W0212,C0301,W0613,E0611,E0401
 
 
-"object programming (op)"
+"object programming shell (ops)"
 
 
 __version__ = "110"
@@ -28,11 +28,11 @@ import traceback
 sys.path.insert(0, os.getcwd())
 
 
-from op.evt import Event
-from op.hdl import Command, Handler
-from op.obj import Wd, cdir, edit, keys, last, printable, write
-from op.run import Cfg, boot, command, scan, scandir
-from op.thr import launch
+from op.message import Event
+from op.handler import Command, Handler
+from op.objects import Wd, cdir, edit, keys, last, printable, write
+from op.running import Cfg, boot, command, scan, scandir
+from op.threads import launch
 
 
 ## defines
