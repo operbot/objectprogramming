@@ -275,7 +275,7 @@ def main():
     if Cfg.daemon:
         daemon()
         Cfg.wait = True
-    scandir("mod", importer, "mod")
+    scandir("mod", initer, "mod")
     scanner("op.mod")
     if Cfg.console:
         setcompleter(Command.cmd)
