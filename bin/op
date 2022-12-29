@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # This file is placed in the Public Domain.
-# pylint: disable=C0115,C0116,C0413,W0212,C0301,W0613,E0611,E0401
+# pylint: disable=C0103,C0115,C0116,C0413,W0212,C0301,W0613,E0611,E0401
 
 
 "object programming"
@@ -28,7 +28,7 @@ sys.path.insert(0, os.getcwd())
 from op.message import Event
 from op.handler import Command, Handler
 from op.objects import Wd, cdir, edit, find, keys, last, printable, save, write
-from op.objects import fntime
+from op.objects import fntime, match
 from op.running import Cfg, boot, command, scan, scandir, wait
 from op.threads import elapsed, launch
 from op.usersdb import User
@@ -287,7 +287,7 @@ def opr(event):
                                         )
             nmr += 1
         return
-    user = user.match("mod.irc.User", {"user": event.rest})
+    user = match("user", {"user": event.rest})
     if not user:
         user = User()
     user.user = event.rest
@@ -298,14 +298,15 @@ def opr(event):
 
 
 def pop(event):
-    global moddir, nmdir
+    fdir = moddir
     if os.path.exists("mod"):
-        moddir = "mod"
+        fdir = "mod"
+    ndir = nmdir
     if os.path.exists("notmod"):
-        nmdir = "notmod"
+        ndir = "notmod"
     destdir = os.path.join(Wd.get(), "notmod", "")
     cdir(destdir)
-    dirs = [moddir, nmdir]
+    dirs = [fdir, ndir]
     nrs = 0
     for dname in dirs:
         for name in os.listdir(dname):
@@ -354,6 +355,7 @@ def main():
         Cfg.wait = True
     if Cfg.wait:
         wait()
+    return None
 
 
 wrap(main)

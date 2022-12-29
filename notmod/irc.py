@@ -21,10 +21,10 @@ import _thread
 from op.message import Event
 from op.objects import Class, Default, Object
 from op.objects import keys, last, printable
-from op.objects import edit, fntime, find, save, update
+from op.objects import edit, save
 from op.objects import locked, register
 from op.handler import Command, Handler
-from op.threads import elapsed, launch
+from op.threads import launch
 from op.usersdb import Users
 
 

@@ -10,10 +10,10 @@ import os
 import unittest
 
 
-from op.obj import Object, Wd, items, keys, register, update, values
-from op.obj import edit, kind, load, save
-from op.obj import ObjectDecoder, ObjectEncoder
-from op.obj import printable
+from op.objects import Object, Wd, items, keys, register, update, values
+from op.objects import edit, kind, load, save
+from op.objects import ObjectDecoder, ObjectEncoder
+from op.objects import printable
 
 
 Wd.workdir = ".test"

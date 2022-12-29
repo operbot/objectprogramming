@@ -8,7 +8,7 @@
 import time
 
 
-from op.objects import Wd, fntime, keys, printable
+from op.objects import Wd, find, fntime, keys, printable
 from op.threads import elapsed
 
 
