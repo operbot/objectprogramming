@@ -14,6 +14,3 @@ from op.objects import *
 from op.running import *
 from op.threads import *
 from op.usersdb import *
-
-
-from op.version import __version__

@@ -35,7 +35,6 @@ from op.objects import fntime, match
 from op.running import Cfg, boot, command, scan, scandir, scanpkg, wait
 from op.threads import elapsed, launch
 from op.usersdb import User, dlt, met
-from op.version import __version__, ver
 
 
 import op.mod
@@ -44,6 +43,7 @@ import op.mod
 ## defines
 
 
+Cfg.banner = "functional programming with objects"
 Cfg.name = "op"
 Wd.workdir = os.path.expanduser("~/.op")
 
@@ -183,8 +183,13 @@ def wrap(func):
 ## runtime
 
 
+def ver(event):
+    event.reply("%s version %s - %s" % (Cfg.name.upper(), __version__, Cfg.banner))
+
+
 def main():
     boot()
+    Command.add(ver)
     scandir("mod", scanner)
     scanpkg(op.mod, scanner)
     if Cfg.prs.txt:
@@ -206,7 +211,6 @@ def main():
                                                  plain=True)
                                                 )
                                       )
-        Command.add(ver)
         setcompleter(Command.cmd)
         print("registered %s" % ",".join(sorted(Command.cmd)))
         cli = Console()

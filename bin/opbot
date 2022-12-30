@@ -30,7 +30,6 @@ from op.handler import Command, Handler
 from op.objects import Wd, cdir, edit, keys, last, printable, write
 from op.running import Cfg, boot, command, scan, scandir
 from op.threads import launch
-from op.version import __version__
 
 
 import op.mod
@@ -153,7 +152,7 @@ def wrap(func):
 
 
 def ver(event):
-    event.reply("OP version %s" % __version__)
+    event.reply("%s version %s" % (Cfg.name, Cfg.version))
 
 
 ## runtime
