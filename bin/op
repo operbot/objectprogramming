@@ -22,6 +22,9 @@ import termios
 import traceback
 
 
+date = time.ctime(time.time()).replace("  ", " ")
+
+
 sys.path.insert(0, os.getcwd())
 
 
@@ -29,10 +32,10 @@ from op.message import Event
 from op.handler import Command, Handler
 from op.objects import Wd, cdir, edit, find, keys, last, printable, save, write
 from op.objects import fntime, match
-from op.running import Cfg, boot, command, scan, scandir, scanner, wait
+from op.running import Cfg, boot, command, scan, scandir, scanpkg, wait
 from op.threads import elapsed, launch
-from op.usersdb import User
-from op.version import __version__
+from op.usersdb import User, dlt, met
+from op.version import __version__, ver
 
 
 import op.mod
@@ -177,109 +180,22 @@ def wrap(func):
             print_exc(evt.__exc__)
 
 
-## commands
-
-
-def cfg(event):
-    last(Cfg)
-    if not event.sets:
-        event.reply(printable(
-                              Cfg,
-                              keys(Cfg),
-                              skip="name,password,prs",
-                             )
-                   )
-    else:
-        edit(Cfg, event.sets)
-        write(Cfg)
-        event.done()
-
-
-def cmd(event):
-    event.reply(",".join(Command.cmd))
-
-
-def dlt(event):
-    if not event.args:
-        event.reply("dlt <username>")
-        return
-    selector = {"user": event.args[0]}
-    for obj in find("user", selector):
-        obj.__deleted__ = True
-        save(obj)
-        event.done()
-        break
-
-
-def met(event):
-    if not event.rest:
-        nmr = 0
-        for obj in find("user"):
-            event.reply("%s %s %s %s" % (
-                                         nmr,
-                                         obj.user,
-                                         obj.perms,
-                                         elapsed(time.time() - fntime(obj.__fnm__)))
-                                        )
-            nmr += 1
-        return
-    user = User()
-    user.user = event.rest
-    user.perms = ["USER"]
-    save(user)
-    event.done()
-
-
-def opr(event):
-    if not event.rest:
-        nmr = 0
-        for obj in find("user"):
-            event.reply("%s %s %s %s" % (
-                                         nmr,
-                                         obj.user,
-                                         obj.perms,
-                                         elapsed(time.time() - fntime(obj.__fnm__)))
-                                        )
-            nmr += 1
-        return
-    user = match("user", {"user": event.rest})
-    if not user:
-        user = User()
-    user.user = event.rest
-    if "OPER" not in user.perms:
-        user.perms.append("OPER")
-    write(user)
-    event.done()
-
-
-def ver(event):
-    event.reply("OP version %s" % __version__)
-
-
 ## runtime
 
 
 def main():
     boot()
-    Command.add(ver)
-    scandir("mod", importer, "mod")
-    scanner("op.mod")
+    scanpkg(op.mod, scanner)
     if Cfg.prs.txt:
-        Command.add(cfg)
         Command.add(dlt)
         Command.add(met)
-        Command.add(opr)
         cli = CLI()
         return command(cli, Cfg.prs.otxt)
     if Cfg.daemon:
         daemon()
         Cfg.wait = True
-    print(Command.cmd)
-    scandir("mod", initer, "mod")
-    scanner("op.mod")
+    scanpkg(op.mod, initer)
     if Cfg.console:
-        setcompleter(Command.cmd)
-        date = time.ctime(time.time()).replace("  ", " ")
         print("%s started at %s %s" % (
                                        Cfg.name.upper(),
                                        date,
@@ -289,6 +205,9 @@ def main():
                                                  plain=True)
                                                 )
                                       )
+        Command.add(ver)
+        setcompleter(Command.cmd)
+        print("registered %s" % ",".join(sorted(Command.cmd)))
         cli = Console()
         cli.start()
         Cfg.wait = True

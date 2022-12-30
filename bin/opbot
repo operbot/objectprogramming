@@ -36,7 +36,11 @@ from op.version import __version__
 import op.mod
 
 
-from op.mod import irc
+from op.mod import irc, rss
+
+
+scan(irc)
+scan(rss)
 
 
 ## defines
@@ -113,31 +117,6 @@ class Completer(rlcompleter.Completer):
 ## utilities
 
 
-def importer(mname, path=None):
-    if path is None:
-        spec = importlib.util.find_spec(mname)
-    else:
-        spec = importlib.util.spec_from_file_location(mname, path)
-    if spec:
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
-        return mod
-    return None
-
-
-def initer(mname, path=None):
-    mod = importer(mname, path)
-    if mod and "init" in dir(mod):
-        thr = launch(mod.init)
-        thr.join()
-    scan(mod)
-
-
-#def scanner(mname, path=None):
-#    mod = importer(mname, path)
-#    scan(mod)
-
-
 def print_exc(ex):
     traceback.print_exception(type(ex), ex, ex.__traceback__)
 
@@ -170,24 +149,6 @@ def wrap(func):
 ## commands
 
 
-def pop(event):
-    if not os.path.exists("mod"):
-        event.reply("no mod dir to populate from")
-        return
-    destdir = os.path.join(Wd.get(), "notmod", "")
-    cdir(destdir)
-    dirs = ["mod", "notmod"]
-    for dname in dirs:
-        for name in os.listdir(dname):
-            if not name.endswith(".py"):
-                continue
-            path = os.path.join(dname, name)
-            dest = os.path.join(destdir, name)
-            event.reply("%s -> %s" % (path, dest))
-            shutil.copy(path, dest)
-    event.ok()
-
-
 def ver(event):
     event.reply("OP version %s" % __version__)
 
@@ -198,15 +159,15 @@ def ver(event):
 def main():
     boot()
     print("%s started at %s %s" % (Cfg.name.upper(), date, printable(Cfg, skip="name", plain=True)))
-    Command.add(pop)
     Command.add(ver)
-    scanner(op.mod, importer)
-    scandir("mod", scanner, "mod")
-    scandir("mod", initer, "mod")
     setcompleter(Command.cmd)
     print("registered %s" % ",".join(sorted(Command.cmd)))
     cli = Console()
     cli.start()
+    irc = IRC()
+    irc.start()
+    fetcher = Fetcher()
+    fetcher.start()
     Cfg.wait = True
     wait()
 

@@ -22,7 +22,7 @@ def __dir__():
             "boot",
             "command",
             "parse",
-            'scanner',
+            'scanpkg',
             'scandir',
             "wait"
            )
@@ -85,11 +85,10 @@ def parse(txt=None):
     return prs
 
 
-def scanner(pkg, importer, mods=None):
+def scanpkg(pkg, importer, mods=None):
     path = pkg.__path__[0]
-    print(path)
     name = pkg.__name__
-    return scandir(path, importer, name, mods)
+    return scandir(path, importer, name)
 
 
 def scandir(path, importer, pname, mods=None):

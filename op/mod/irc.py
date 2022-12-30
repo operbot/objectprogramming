@@ -3,7 +3,7 @@
 # pylint: disable=E1101,R0912,R0915,R0904,W0221
 
 
-"irc"
+"internet relay chat"
 
 
 import base64
@@ -43,7 +43,7 @@ __all__ = __dir__()
 
 
 NAME = "op"
-REALNAME = "functional programming with objects."
+REALNAME = "functional programming with objects"
 
 
 saylock = _thread.allocate_lock()
