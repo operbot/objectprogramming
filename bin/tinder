@@ -42,7 +42,7 @@ Cfg.debug = True
 errors = []
 events = []
 results = []
-
+skip = ["debug"]
 
 param = Object()
 param.add = ["test@shell", "bart", ""]
@@ -94,6 +94,12 @@ def consume(evt):
             continue
     return res
 
+
+def doskip(txt):
+    for skp in skip:
+        if skp in txt:
+            return True
+    return False
 
 
 @locked(paylock)
@@ -149,7 +155,9 @@ def wrap(func):
         if gotterm:
             termios.tcsetattr(fds, termios.TCSADRAIN, old)
         for evt in Command.errors:
-            print_exc(evt.__exc__)
+            exc = evt.__exc__
+            if not doskip(str(exc)):
+                print_exc(exc, exc.__traceback__)
 
 
 def main():
@@ -180,3 +188,4 @@ def main():
 
 
 wrap(main)
+print(Cfg)

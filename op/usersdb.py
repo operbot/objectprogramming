@@ -8,7 +8,11 @@
 ## imports
 
 
-from .objects import Class, Object, find, save, update
+import time
+
+
+from .objects import Class, Object, find, fntime, match, save, update, write
+from .threads import elapsed
 
 
 ## defines

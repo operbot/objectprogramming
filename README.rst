@@ -27,7 +27,7 @@ reading type from the object.
 **INSTALL**
 
 |
-| ``pip3 install op --upgrade --force-reinstall``
+| ``python3 -m pip install objectprogramming``
 |
 
 **PROGRAMMING**
@@ -61,7 +61,7 @@ great for giving objects peristence by having their state stored in files::
  >>> from op import Object, save
  >>> o = Object()
  >>> save(o)
- 'op.obj.Object/2021-08-31/15:31:05.717063'
+ 'op.objects.Object/2021-08-31/15:31:05.717063'
 
 |
 
