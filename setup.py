@@ -40,7 +40,7 @@ setup(
     long_description_content_type="text/x-rst",
     license="Public Domain",
     packages=["op", "op.mod"],
-    scripts=["bin/op",  "bin/opb", "bin/opd", "bin/opf", "bin/ops"],
+    scripts=["bin/op",  "bin/opb", "bin/opc", "bin/opd", "bin/opf", "bin/ops"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: Public Domain",
