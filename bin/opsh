@@ -31,8 +31,11 @@ sys.path.insert(0, os.getcwd())
 from op.message import Event
 from op.handler import Command, Handler
 from op.objects import Wd, cdir, edit, keys, last, printable, write
-from op.running import Cfg, boot, command, scan, scandir
+from op.running import Cfg, boot, command, scan, scandir, scanpkg
 from op.threads import launch
+
+
+import op.mod
 
 
 ## defines
@@ -213,21 +216,13 @@ def ver(event):
 
 def main():
     boot()
-    Command.add(cmd)
-    Command.add(ver)
-    scandir("mod", scanner, "mod")
-    if Cfg.exec:
-        Command.add(cfg)
-        Command.add(dlt)
-        Command.add(dis)
-        Command.add(ena)
-        Command.add(met)
-        Command.add(mod)
-        Command.add(opr)
-        Command.add(pop)
-    scandir("mod", initer, "mod")
-    setcompleter(Command.cmd)
     print("%s started at %s %s" % (Cfg.name.upper(), date, printable(Cfg, skip="name", plain=True)))
+    scandir("mod", scanner, "mod")
+    scandir("mod", initer, "mod")
+    scanpkg(op.mod, scanner)
+    scanpkg(op.mod,  initer)
+    setcompleter(Command.cmd)
+    print("registered %s" % ",".join(Command.cmd))
     cli = Console()
     cli.start()
     Cfg.wait = True

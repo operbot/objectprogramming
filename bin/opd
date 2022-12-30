@@ -19,6 +19,9 @@ sys.path.insert(0, os.getcwd())
 
 
 from op import Cfg, Command, Wd, launch, scan, scandir, wait, __version__
+from op.mod import irc, rss, sts
+from op.mod.irc import IRC
+from op.mod.rss import Fetcher
 
 
 ## defines
@@ -26,6 +29,11 @@ from op import Cfg, Command, Wd, launch, scan, scandir, wait, __version__
 
 Cfg.name = "opd"
 Wd.workdir = os.path.expanduser("~/.op")
+
+
+scan(irc)
+scan(rss)
+scan(sts)
 
 
 ## utilities
@@ -98,8 +106,10 @@ def main():
     daemon()
     Command.add(cmd)
     Command.add(ver)
-    scandir(Wd.moddir(), scanner, "mod")
-    scandir(Wd.moddir(), initer, "mod")
+    irc = IRC()
+    irc.start()
+    fetcher = Fetcher()
+    fetcher.start()
     wait(waiter)
 
 

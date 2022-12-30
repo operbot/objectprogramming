@@ -73,7 +73,7 @@ class Config(Default):
     servermodes = ""
     sleep = 60
     username = "%s" % NAME
-    users = True
+    users = False
 
     def __init__(self):
         super().__init__()

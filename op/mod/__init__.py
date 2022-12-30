@@ -5,4 +5,4 @@
 "object programming modules"
 
 
-from op.mod import cfg, cmds, fnd, log, sts, tdo
+from op.mod import cfg, cmd, fnd, log, sts, tdo
