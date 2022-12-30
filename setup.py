@@ -39,13 +39,8 @@ setup(
     long_description=read(),
     long_description_content_type="text/x-rst",
     license="Public Domain",
-    packages=["op"],
-    scripts=["bin/op"],
-    include_package_data=True,
-    data_files=[
-                ("op/mod", uploadlist("mod")),
-                ("share/doc/op", ("README.rst",))
-               ],
+    packages=["op", "op.mod"],
+    scripts=["bin/op",  "bin/opb", "bin/opd", "bin/opf", "bin/ops"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: Public Domain",
