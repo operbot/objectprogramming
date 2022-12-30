@@ -17,6 +17,7 @@ from op.threads import elapsed, name
 def __dir__():
     return (
             'flt',
+            'mod',
             'thr',
             'upt'
            )
@@ -33,6 +34,13 @@ def flt(event):
     except (KeyError, TypeError, IndexError, ValueError):
         pass
     event.reply(" | ".join([name(o) for o in Bus.objs]))
+
+
+def mod(event):
+    path = "mod"
+    if os.path.exists("mod"):
+        path = Wd.moddir()
+    event.reply(",".join([x[:-3] for x in os.listdir(path) if not x.startswith("_")]))
 
 
 def thr(event):

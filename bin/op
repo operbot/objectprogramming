@@ -261,7 +261,6 @@ def ver(event):
 
 def main():
     boot()
-    Command.add(cmd)
     Command.add(ver)
     scandir("mod", importer, "mod")
     scanner("op.mod")
@@ -275,6 +274,7 @@ def main():
     if Cfg.daemon:
         daemon()
         Cfg.wait = True
+    print(Command.cmd)
     scandir("mod", initer, "mod")
     scanner("op.mod")
     if Cfg.console:

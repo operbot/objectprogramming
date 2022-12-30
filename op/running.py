@@ -87,8 +87,9 @@ def parse(txt=None):
 
 def scanner(pkg, importer, mods=None):
     path = pkg.__path__[0]
+    print(path)
     name = pkg.__name__
-    scandir(path, importer, name, mods)
+    return scandir(path, importer, name, mods)
 
 
 def scandir(path, importer, pname, mods=None):

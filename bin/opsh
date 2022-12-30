@@ -38,6 +38,9 @@ from op.threads import launch
 ## defines
 
 
+date = time.ctime(time.time()).replace("  ", " ")
+
+
 Cfg.name = "opsh"
 Wd.workdir = os.path.expanduser("~/.op")
 
@@ -197,118 +200,8 @@ def cmd(event):
     event.reply(",".join(Command.cmd))
 
 
-def dlt(event):
-    if not event.args:
-        event.reply("dlt <username>")
-        return
-    selector = {"user": event.args[0]}
-    for obj in find("user", selector):
-        obj.__deleted__ = True
-        save(obj)
-        event.done()
-        break
-
-
-
-def dis(event):
-    if not event.args:
-        event.reply("disable <modname>")
-        return
-    name = event.args[0]
-    if name == "disable":
-        event.reply("i won't disable myself")
-        return
-    name += ".py"
-    path = os.path.join(Wd.moddir(), name)
-    if not os.path.exists(path):
-        event.reply("can't find %s to disable" % name)
-        return
-    nmd = os.path.join(Wd.get(), "notmod")
-    cdir(nmd)
-    dest = os.path.join(nmd, name)
-    shutil.move(path, dest)
-    event.ok()
-
-
-def ena(event):
-    if not event.args:
-        event.reply("enable <modname>")
-        return
-    name = event.args[0]
-    if name == "enable":
-        event.reply("i won't enable myself")
-        return
-    name += ".py"
-    path = os.path.join(Wd.get(), "notmod", name)
-    if not os.path.exists(path):
-        event.reply("missing %s" % name)
-        return
-    dest = os.path.join(Wd.moddir(), name)
-    shutil.move(path, dest)
-    event.ok()
-
-
-def met(event):
-    if not event.rest:
-        nmr = 0
-        for obj in find("user"):
-            event.reply("%s %s %s %s" % (
-                                         nmr,
-                                         obj.user,
-                                         obj.perms,
-                                         elapsed(time.time() - fntime(obj.__fnm__)))
-                                        )
-            nmr += 1
-        return
-    user = User()
-    user.user = event.rest
-    user.perms = ["USER"]
-    save(user)
-    event.done()
-
-
 def mod(event):
     event.reply(",".join([x[:-3] for x in os.listdir(Wd.moddir()) if not x.startswith("_")]))
-
-
-def opr(event):
-    if not event.rest:
-        nmr = 0
-        for obj in find("user"):
-            event.reply("%s %s %s %s" % (
-                                         nmr,
-                                         obj.user,
-                                         obj.perms,
-                                         elapsed(time.time() - fntime(obj.__fnm__)))
-                                        )
-            nmr += 1
-        return
-    user = user.match("mod.irc.User", {"user": event.rest})
-    if not user:
-        user = User()
-    user.user = event.rest
-    if "OPER" not in user.perms:
-        user.perms.append("OPER")
-    write(user)
-    event.done()
-
-
-def pop(event):
-    if not os.path.exists("mod"):
-        event.reply("no mod dir to populate from")
-        return
-    destdir = os.path.join(Wd.get(), "notmod", "")
-    cdir(destdir)
-    dirs = ["mod", "notmod"]
-    for dname in dirs:
-        for name in os.listdir(dname):
-            if not name.endswith(".py"):
-                continue
-            path = os.path.join(dname, name)
-            dest = os.path.join(destdir, name)
-            event.reply("%s -> %s" % (path, dest))
-            shutil.copy(path, dest)
-    event.ok()
 
 
 def ver(event):
@@ -323,7 +216,6 @@ def main():
     Command.add(cmd)
     Command.add(ver)
     scandir("mod", scanner, "mod")
-    scandir("notmod", scanner, "mod")
     if Cfg.exec:
         Command.add(cfg)
         Command.add(dlt)
@@ -333,15 +225,8 @@ def main():
         Command.add(mod)
         Command.add(opr)
         Command.add(pop)
-        cli = CLI()
-        return command(cli, Cfg.prs.otxt)
-    if Cfg.daemon:
-        daemon()
-        Cfg.wait = True
     scandir("mod", initer, "mod")
-    scandir("notmod", initer, "mod")
     setcompleter(Command.cmd)
-    date = time.ctime(time.time()).replace("  ", " ")
     print("%s started at %s %s" % (Cfg.name.upper(), date, printable(Cfg, skip="name", plain=True)))
     cli = Console()
     cli.start()
