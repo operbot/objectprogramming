@@ -91,8 +91,10 @@ def scanpkg(pkg, importer, mods=None):
     return scandir(path, importer, name)
 
 
-def scandir(path, importer, pname, mods=None):
+def scandir(path, importer, pname=None, mods=None):
     res = []
+    if pname is None:
+        pname = path.split(os.sep)[-1]
     for modname in listmod(path):
         if mods and not include(modname, spl(mods)):
             continue

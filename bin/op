@@ -185,6 +185,7 @@ def wrap(func):
 
 def main():
     boot()
+    scandir("mod", scanner)
     scanpkg(op.mod, scanner)
     if Cfg.prs.txt:
         Command.add(dlt)

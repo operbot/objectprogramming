@@ -126,7 +126,7 @@ def met(event):
     user = User()
     user.user = event.rest
     user.perms = ["USER"]
-    pth = save(user)
+    save(user)
     event.ok()
 
 

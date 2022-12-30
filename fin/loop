@@ -20,7 +20,6 @@ def loop(path, txt):
             continue
         old = os.getcwd()
         fpath = os.path.abspath(os.path.join(path, fnn))
-        print(fpath)
         if os.path.isdir(fpath):
             loop(fpath, txt)
         if not os.path.isdir(fpath):

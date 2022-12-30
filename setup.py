@@ -31,7 +31,7 @@ def uploadlist(dir):
 
 setup(
     name="objectprogramming",
-    version="105",
+    version="106",
     author="Bart Thate",
     author_email="operbot100@gmail.com",
     url="http://github.com/operbot/objectprogramming",
