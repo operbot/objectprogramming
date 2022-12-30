@@ -28,7 +28,7 @@ sys.path.insert(0, os.getcwd())
 from op.message import Event
 from op.handler import Command, Handler
 from op.objects import Wd, cdir, edit, keys, last, printable, write
-from op.running import Cfg, boot, command, scan, scandir, scanner
+from op.running import Cfg, boot, command, scan, scandir
 from op.threads import launch
 from op.version import __version__
 
@@ -36,11 +36,14 @@ from op.version import __version__
 import op.mod
 
 
-from op.mod import irc, rss
+from op.mod.irc import IRC
+from op.mod.rss import Fetcher
+from op.mod import irc, rss, sts
 
 
 scan(irc)
 scan(rss)
+scan(sts)
 
 
 ## defines

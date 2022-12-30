@@ -5,6 +5,7 @@
 "runtime information"
 
 
+import os
 import threading
 import time
 
@@ -37,10 +38,9 @@ def flt(event):
 
 
 def mod(event):
-    path = "mod"
-    if os.path.exists("mod"):
-        path = Wd.moddir()
-    event.reply(",".join([x[:-3] for x in os.listdir(path) if not x.startswith("_")]))
+    import op.mod
+    path = op.mod.__path__[0]
+    event.reply(",".join([x[:-3] for x in os.listdir(path) if not (x.startswith("_") or x.endswith("~"))]))
 
 
 def thr(event):
