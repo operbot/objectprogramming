@@ -36,6 +36,9 @@ from op.version import __version__
 import op.mod
 
 
+from op.mod import irc
+
+
 ## defines
 
 
