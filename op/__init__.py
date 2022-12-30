@@ -5,7 +5,7 @@
 "object programming"
 
 
-from op import message, handler, objects, running, threads, usersdb, version
+from op import message, handler, objects, running, threads, usersdb
 
 
 from op.message import *

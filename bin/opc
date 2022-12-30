@@ -1,0 +1,163 @@
+#!/usr/bin/env python3
+# This file is placed in the Public Domain.
+# pylint: disable=C0103,C0115,C0116,C0413,W0212,C0301,W0613,E0611,E0401
+
+
+"object programming"
+
+
+## imports
+
+
+import atexit
+import importlib
+import importlib.util
+import os
+import readline
+import rlcompleter
+import sys
+import shutil
+import time
+import termios
+import traceback
+
+
+date = time.ctime(time.time()).replace("  ", " ")
+
+
+sys.path.insert(0, os.getcwd())
+
+
+from op.message import Event
+from op.handler import Command, Handler
+from op.objects import Wd, cdir, edit, find, keys, last, printable, save, write
+from op.objects import fntime, match
+from op.running import Cfg, boot, command, scan, scandir, scanpkg, wait
+from op.threads import elapsed, launch
+from op.usersdb import User, dlt, met
+
+
+import op.mod
+
+
+## defines
+
+
+Cfg.banner = "functional programming with objects"
+Cfg.name = "op"
+Wd.workdir = os.path.expanduser("~/.op")
+
+
+## classes
+
+
+class CLI(Handler):
+
+    @staticmethod
+    def announce(txt):
+        pass
+
+    @staticmethod
+    def raw(txt):
+        print(txt)
+        sys.stdout.flush()
+
+
+class Completer(rlcompleter.Completer):
+
+    def __init__(self, options):
+        rlcompleter.Completer.__init__(self)
+        self.matches = []
+        self.options = options
+
+    def complete(self, text, state):
+        if state == 0:
+            if text:
+                self.matches = [
+                                s for s in self.options
+                                if s and s.startswith(text)
+                               ]
+            else:
+                self.matches = self.options[:]
+        try:
+            return self.matches[state]
+        except IndexError:
+            return None
+
+
+## utilities
+
+
+def importer(mname, path=None):
+    if path is None:
+        spec = importlib.util.find_spec(mname)
+    else:
+        spec = importlib.util.spec_from_file_location(mname, path)
+    if spec:
+        mods = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mods)
+        return mods
+    return None
+
+
+def initer(mname, path=None):
+    mods = importer(mname, path)
+    if mods and "init" in dir(mods):
+        thr = launch(mods.init)
+        thr.join()
+    scan(mods)
+
+
+def scanner(mname, path=None):
+    mods = importer(mname, path)
+    scan(mods)
+
+
+def print_exc(ex):
+    traceback.print_exception(type(ex), ex, ex.__traceback__)
+
+
+def setcompleter(optionlist):
+    completer = Completer(optionlist)
+    readline.set_completer(completer.complete)
+    readline.parse_and_bind("tab: complete")
+    atexit.register(lambda: readline.set_completer(None))
+
+
+def wrap(func):
+    fds = sys.stdin.fileno()
+    gotterm = True
+    try:
+        old = termios.tcgetattr(fds)
+    except termios.error:
+        gotterm = False
+    try:
+        func()
+    except (EOFError, KeyboardInterrupt):
+        print("")
+    finally:
+        if gotterm:
+            termios.tcsetattr(fds, termios.TCSADRAIN, old)
+        for evt in Command.errors:
+            print_exc(evt.__exc__)
+
+
+## runtime
+
+
+def ver(event):
+    event.reply("%s version %s - %s" % (Cfg.name.upper(), __version__, Cfg.banner))
+
+
+def main():
+    boot()
+    Command.add(ver)
+    scandir("mod", scanner)
+    scanpkg(op.mod, scanner)
+    Command.add(dlt)
+    Command.add(met)
+    cli = CLI()
+    return command(cli, Cfg.prs.otxt)
+
+
+main()
