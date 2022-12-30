@@ -4,11 +4,14 @@
 "config"
 
 
-from op import Cfg, edit, keys, last, write
+from op import Cfg, edit, keys, last, printable, write
 
 
 def cfg(event):
     last(Cfg)
+    if not Cfg.prs.txt:
+        event.reply("config is empty")
+        return
     if not event.sets:
         event.reply(printable(
                               Cfg,

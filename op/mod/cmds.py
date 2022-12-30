@@ -10,9 +10,9 @@ from op.handler import Command
 
 def __dir__():
     return (
-            'cmds',
+            'cmd',
            )
 
 
-def cmds(event):
+def cmd(event):
     event.reply(",".join(sorted(Command.cmd)))
